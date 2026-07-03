@@ -21,7 +21,7 @@ def _is_cpp_target(srcs):
 def _is_cuda_target(srcs):
     return any([src.extension in _CUDA_EXTENSIONS for src in srcs])
 
-def _run_iwyu(ctx, iwyu_executable, iwyu_runfiles, iwyu_mappings, iwyu_options, flags, target, infile):
+def _run_iwyu(ctx, iwyu_executable, iwyu_runfiles, iwyu_mappings, iwyu_options, flags, target, infile, cc_toolchain):
     compilation_context = target[CcInfo].compilation_context
     outfile = ctx.actions.declare_file(
         "{}.{}.iwyu.txt".format(target.label.name, infile.basename),
@@ -63,7 +63,7 @@ def _run_iwyu(ctx, iwyu_executable, iwyu_runfiles, iwyu_mappings, iwyu_options, 
 
     inputs = depset(
         direct = [infile] + iwyu_mappings,
-        transitive = [compilation_context.headers, iwyu_runfiles],
+        transitive = [compilation_context.headers, iwyu_runfiles, cc_toolchain.all_files],
     )
 
     # https://github.com/bazelbuild/bazel/issues/5511
@@ -85,8 +85,7 @@ def _rule_sources(ctx):
             srcs += [f for f in src.files.to_list() if f.is_source]
     return srcs
 
-def _toolchain_flags(ctx, is_cpp_target):
-    cc_toolchain = find_cpp_toolchain(ctx)
+def _toolchain_flags(ctx, cc_toolchain, is_cpp_target):
     feature_configuration = cc_common.configure_features(
         ctx = ctx,
         cc_toolchain = cc_toolchain,
@@ -142,6 +141,8 @@ def _iwyu_aspect_impl(target, ctx):
     if len(srcs) == 0 or _is_cuda_target(srcs):
         return []
 
+    cc_toolchain = find_cpp_toolchain(ctx)
+
     iwyu_toolchain = ctx.toolchains["@bazel_iwyu//bazel/iwyu:toolchain_type"]
     iwyu_executable = iwyu_toolchain.iwyu_info.iwyu_executable
     iwyu_runfiles = iwyu_toolchain.iwyu_info.iwyu_runfiles
@@ -156,7 +157,7 @@ def _iwyu_aspect_impl(target, ctx):
             fail("Do not put mapping files in iwyu_opts. Use the iwyu_mappings attribute or flag instead. Found: " + opt)
 
     is_cpp_target = _is_cpp_target(srcs)
-    toolchain_flags = _toolchain_flags(ctx, is_cpp_target)
+    toolchain_flags = _toolchain_flags(ctx, cc_toolchain, is_cpp_target)
 
     rule_flags = ["-x", "c++"] if is_cpp_target else []
     if hasattr(ctx.rule.attr, "copts"):
@@ -165,7 +166,7 @@ def _iwyu_aspect_impl(target, ctx):
     all_flags = _safe_flags(toolchain_flags + rule_flags)
 
     outputs = [
-        _run_iwyu(ctx, iwyu_executable, iwyu_runfiles, iwyu_mappings, iwyu_options, all_flags, target, src)
+        _run_iwyu(ctx, iwyu_executable, iwyu_runfiles, iwyu_mappings, iwyu_options, all_flags, target, src, cc_toolchain)
         for src in srcs
     ]
     return [
