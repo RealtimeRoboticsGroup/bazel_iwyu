@@ -13,6 +13,6 @@ cc_test(
     srcs = ["sample2_test.cc"],
     deps = [
         ":sample2",
-        "@com_google_googletest//:gtest_main",
+        "@googletest//:gtest_main",
     ],
 )
