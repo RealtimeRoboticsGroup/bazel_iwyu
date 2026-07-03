@@ -80,6 +80,20 @@ def download_file(url, dest_path):
     with urllib.request.urlopen(req) as response, open(dest_path, "wb") as out_file:
         shutil.copyfileobj(response, out_file)
 
+def normalize_extracted_dir(target_dir):
+    """
+    If target_dir contains only a single subdirectory (and maybe hidden files),
+    move all of its contents up to target_dir.
+    """
+    items = [x for x in os.listdir(target_dir) if x not in (".", "..")]
+    if len(items) == 1:
+        subpath = os.path.join(target_dir, items[0])
+        if os.path.isdir(subpath):
+            print(f"Normalizing structure of {target_dir}: moving contents of {items[0]} up...")
+            for content in os.listdir(subpath):
+                shutil.move(os.path.join(subpath, content), os.path.join(target_dir, content))
+            os.rmdir(subpath)
+
 def apply_patches(src_dir, iwyu_version, major_minor):
     patch_dirs = [
         os.path.join("internal", "patches", iwyu_version),
@@ -157,22 +171,28 @@ def main():
                 
             print("Extracting LLVM...")
             subprocess.run(
-                ["tar", "-xf", llvm_tar, "--strip-components=1", "-C", llvm_dir],
+                ["tar", "-xf", llvm_tar, "-C", llvm_dir],
                 check=True
             )
+            normalize_extracted_dir(llvm_dir)
         
         # 2. Download and extract IWYU source
+        upstream_tag = iwyu_version
+        if upstream_tag.endswith(".0"):
+            upstream_tag = upstream_tag[:-2]
+            
         iwyu_src_dir = os.path.join(tmpdir, f"include-what-you-use-{iwyu_version}")
-        iwyu_url = f"https://github.com/include-what-you-use/include-what-you-use/archive/refs/tags/{iwyu_version}.tar.gz"
+        iwyu_url = f"https://github.com/include-what-you-use/include-what-you-use/archive/refs/tags/{upstream_tag}.tar.gz"
         iwyu_tar = os.path.join(tmpdir, f"iwyu-{iwyu_version}.tar.gz")
         download_file(iwyu_url, iwyu_tar)
         
         print("Extracting IWYU source...")
         os.makedirs(iwyu_src_dir, exist_ok=True)
         subprocess.run(
-            ["tar", "xzf", iwyu_tar, "--strip-components=1", "-C", iwyu_src_dir],
+            ["tar", "-xzf", iwyu_tar, "-C", iwyu_src_dir],
             check=True
         )
+        normalize_extracted_dir(iwyu_src_dir)
         
         # 3. Apply patches if any
         apply_patches(iwyu_src_dir, iwyu_version, major_minor)
