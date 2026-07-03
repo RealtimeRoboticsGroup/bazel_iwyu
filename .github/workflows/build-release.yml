@@ -22,15 +22,17 @@ jobs:
     if: github.event_name == 'workflow_dispatch' || startsWith(github.event.release.tag_name, 'iwyu-')
     runs-on: ${{ matrix.runner }}
     container:
-      image: ubuntu:22.04
+      image: ${{ matrix.container_image }}
     strategy:
       fail-fast: false
       matrix:
         include:
           - arch: x86_64
             runner: ubuntu-24.04
+            container_image: ubuntu:22.04
           - arch: aarch64
             runner: ubuntu-24.04-arm
+            container_image: ubuntu:24.04
 
     steps:
       - name: Checkout repository
