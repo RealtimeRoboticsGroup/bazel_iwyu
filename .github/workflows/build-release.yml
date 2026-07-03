@@ -2,7 +2,7 @@ name: Build and Release IWYU
 
 on:
   release:
-    types: [published, created]
+    types: [published]
   workflow_dispatch:
     inputs:
       iwyu_version:
