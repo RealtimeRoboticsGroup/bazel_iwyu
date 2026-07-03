@@ -39,12 +39,20 @@ sh_binary(
     ],
 )
 
+sh_binary(
+    name = "mapping_flag_error_test_runner",
+    srcs = ["mapping_flag_error_test.sh"],
+    data = [
+        "@bazel_tools//tools/bash/runfiles",
+    ],
+)
+
 # 1. Version Selection Tests
 bazel_integration_test(
     name = "version_selection_test_8",
     bazel_binaries = bazel_binaries,
     bazel_version = "8.0.0",
-    tags = integration_test_utils.DEFAULT_INTEGRATION_TEST_TAGS,
+    tags = [],
     test_runner = ":version_selection_test_runner",
     workspace_files = WORKSPACE_FILES,
     workspace_path = "test_workspace",
@@ -54,7 +62,7 @@ bazel_integration_test(
     name = "version_selection_test_9",
     bazel_binaries = bazel_binaries,
     bazel_version = "9.0.0",
-    tags = integration_test_utils.DEFAULT_INTEGRATION_TEST_TAGS,
+    tags = [],
     test_runner = ":version_selection_test_runner",
     workspace_files = WORKSPACE_FILES,
     workspace_path = "test_workspace",
@@ -65,7 +73,7 @@ bazel_integration_test(
     name = "apply_fix_test_8",
     bazel_binaries = bazel_binaries,
     bazel_version = "8.0.0",
-    tags = integration_test_utils.DEFAULT_INTEGRATION_TEST_TAGS,
+    tags = [],
     test_runner = ":apply_fix_test_runner",
     workspace_files = WORKSPACE_FILES,
     workspace_path = "test_workspace",
@@ -75,7 +83,7 @@ bazel_integration_test(
     name = "apply_fix_test_9",
     bazel_binaries = bazel_binaries,
     bazel_version = "9.0.0",
-    tags = integration_test_utils.DEFAULT_INTEGRATION_TEST_TAGS,
+    tags = [],
     test_runner = ":apply_fix_test_runner",
     workspace_files = WORKSPACE_FILES,
     workspace_path = "test_workspace",
@@ -86,7 +94,7 @@ bazel_integration_test(
     name = "custom_mappings_test_8",
     bazel_binaries = bazel_binaries,
     bazel_version = "8.0.0",
-    tags = integration_test_utils.DEFAULT_INTEGRATION_TEST_TAGS,
+    tags = [],
     test_runner = ":custom_mappings_test_runner",
     workspace_files = WORKSPACE_FILES,
     workspace_path = "test_workspace",
@@ -96,8 +104,29 @@ bazel_integration_test(
     name = "custom_mappings_test_9",
     bazel_binaries = bazel_binaries,
     bazel_version = "9.0.0",
-    tags = integration_test_utils.DEFAULT_INTEGRATION_TEST_TAGS,
+    tags = [],
     test_runner = ":custom_mappings_test_runner",
+    workspace_files = WORKSPACE_FILES,
+    workspace_path = "test_workspace",
+)
+
+# 4. Mapping Flag Error Validation Tests
+bazel_integration_test(
+    name = "mapping_flag_error_test_8",
+    bazel_binaries = bazel_binaries,
+    bazel_version = "8.0.0",
+    tags = [],
+    test_runner = ":mapping_flag_error_test_runner",
+    workspace_files = WORKSPACE_FILES,
+    workspace_path = "test_workspace",
+)
+
+bazel_integration_test(
+    name = "mapping_flag_error_test_9",
+    bazel_binaries = bazel_binaries,
+    bazel_version = "9.0.0",
+    tags = [],
+    test_runner = ":mapping_flag_error_test_runner",
     workspace_files = WORKSPACE_FILES,
     workspace_path = "test_workspace",
 )

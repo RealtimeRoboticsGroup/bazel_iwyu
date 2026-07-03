@@ -148,6 +148,12 @@ def _iwyu_aspect_impl(target, ctx):
 
     iwyu_mappings = ctx.attr._iwyu_mappings.files.to_list()
     iwyu_options = ctx.attr._iwyu_opts[BuildSettingInfo].value
+    for opt in iwyu_options:
+        if (opt == "--mapping_file" or
+            opt == "-mapping_file" or
+            opt.startswith("--mapping_file=") or
+            opt.startswith("-mapping_file=")):
+            fail("Do not put mapping files in iwyu_opts. Use the iwyu_mappings attribute or flag instead. Found: " + opt)
 
     is_cpp_target = _is_cpp_target(srcs)
     toolchain_flags = _toolchain_flags(ctx, is_cpp_target)
