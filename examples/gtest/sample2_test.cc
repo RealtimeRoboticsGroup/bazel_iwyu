@@ -37,7 +37,7 @@
 // your tests organized.  You may also throw in additional tests as
 // needed.
 
-#include "examples/gtest/sample2.h"
+#include "sample2.h"
 
 #include <memory>
 

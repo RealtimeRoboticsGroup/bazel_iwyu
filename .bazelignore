@@ -1,2 +1,3 @@
 examples/boost
 examples/cross_compilation
+examples/gtest
