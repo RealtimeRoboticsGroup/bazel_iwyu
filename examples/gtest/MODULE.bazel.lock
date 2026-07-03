@@ -199,6 +199,42 @@
   },
   "selectedYankedVersions": {},
   "moduleExtensions": {
+    "@@bazel_iwyu+//bazel/iwyu:extensions.bzl%iwyu": {
+      "general": {
+        "bzlTransitiveDigest": "Pd+KPf4yTHGuS7Mdpxi4daLDlbDe1mbzhXzYH45Ew5o=",
+        "usagesDigest": "ltz6A2j0Rbv6rDmJpk5aDm6sM/mp+ao3cNinp8E2l58=",
+        "recordedInputs": [],
+        "generatedRepoSpecs": {
+          "iwyu_prebuilt_pkg": {
+            "repoRuleId": "@@bazel_iwyu+//bazel:prebuilt_pkg.bzl%prebuilt_pkg",
+            "attributes": {
+              "build_file": "@@bazel_iwyu+//bazel/iwyu:BUILD.prebuilt_pkg",
+              "urls": {
+                "linux-aarch64": [
+                  "https://github.com/RealtimeRoboticsGroup/bazel_iwyu/releases/download/iwyu-0.25.0/iwyu-0.25.0-aarch64-linux-gnu.tar.zst"
+                ],
+                "linux-x86_64": [
+                  "https://github.com/RealtimeRoboticsGroup/bazel_iwyu/releases/download/iwyu-0.25.0/iwyu-0.25.0-x86_64-linux-gnu.tar.zst"
+                ],
+                "macos-arm64": [
+                  "https://github.com/RealtimeRoboticsGroup/bazel_iwyu/releases/download/iwyu-0.25.0/iwyu-0.25.0-arm64-apple-darwin.tar.zst"
+                ]
+              },
+              "sha256": {
+                "linux-aarch64": "01b2afa04f71b970a930a1108d19eb929c65d59b0810e76545056ed4fd121f2f",
+                "linux-x86_64": "ae37672c7e34e87e01b017bbd321dedf5e8fda68fcec6f94ca62df0ac5c66231",
+                "macos-arm64": "6e8afade21a9e0e1e6b123405047c56333b368802f16f3b6e8e701d4c2b9b58e"
+              },
+              "strip_prefix": {
+                "linux-aarch64": "iwyu-0.25.0-aarch64-linux-gnu",
+                "linux-x86_64": "iwyu-0.25.0-x86_64-linux-gnu",
+                "macos-arm64": "iwyu-0.25.0-arm64-apple-darwin"
+              }
+            }
+          }
+        }
+      }
+    },
     "@@rules_kotlin+//src/main/starlark/core/repositories:bzlmod_setup.bzl%rules_kotlin_extensions": {
       "general": {
         "bzlTransitiveDigest": "Ga4z8lQy1YQ5rAMy+dOl0dqcCEBnYNCXku8x3YQmDZI=",

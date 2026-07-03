@@ -1,0 +1,12 @@
+module(name = "test_version_selection")
+
+bazel_dep(name = "rules_cc", version = "0.2.17")
+bazel_dep(name = "bazel_iwyu")
+local_path_override(
+    module_name = "bazel_iwyu",
+    path = "../../..",
+)
+
+iwyu = use_extension("@bazel_iwyu//:extensions.bzl", "iwyu")
+iwyu.toolchain(version = "0.24.0")
+use_repo(iwyu, "iwyu_prebuilt_pkg")
