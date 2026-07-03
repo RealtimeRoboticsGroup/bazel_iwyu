@@ -138,7 +138,7 @@ jobs:
 
       - name: Upload to Github Release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           EVENT_NAME: ${{ github.event_name }}
           RELEASE_TAG_NAME: ${{ github.event.release.tag_name }}
           IWYU_INPUT_VER: ${{ github.event.inputs.iwyu_version }}
