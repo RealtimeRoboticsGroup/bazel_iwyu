@@ -12,8 +12,9 @@ on:
         description: 'Clang version to use (optional, defaults to IWYU minor - 4)'
         required: false
 
+# Restrict default permissions to read-only.
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   build-linux:
@@ -56,20 +57,24 @@ jobs:
       - name: Build IWYU
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          EVENT_NAME: ${{ github.event_name }}
+          RELEASE_TAG_NAME: ${{ github.event.release.tag_name }}
+          IWYU_INPUT_VER: ${{ github.event.inputs.iwyu_version }}
+          CLANG_INPUT_VER: ${{ github.event.inputs.clang_version }}
         run: |
-          # Determine the IWYU version
-          if [ "${{ github.event_name }}" = "release" ]; then
-            IWYU_VER="${{ github.event.release.tag_name }}"
+          # Safe mapping of input version
+          if [ "$EVENT_NAME" = "release" ]; then
+            IWYU_VER="$RELEASE_TAG_NAME"
           else
-            IWYU_VER="${{ github.event.inputs.iwyu_version }}"
+            IWYU_VER="$IWYU_INPUT_VER"
           fi
           
           # Clean version name (strip leading 'v')
           IWYU_VER=$(echo "$IWYU_VER" | sed 's/^v//')
           
           ARGS=(--iwyu-version "$IWYU_VER")
-          if [ -n "${{ github.event.inputs.clang_version }}" ]; then
-            ARGS+=(--clang-version "${{ github.event.inputs.clang_version }}")
+          if [ -n "$CLANG_INPUT_VER" ]; then
+            ARGS+=(--clang-version "$CLANG_INPUT_VER")
           fi
           
           python3 internal/build_iwyu.py "${ARGS[@]}"
@@ -101,20 +106,24 @@ jobs:
       - name: Build IWYU
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          EVENT_NAME: ${{ github.event_name }}
+          RELEASE_TAG_NAME: ${{ github.event.release.tag_name }}
+          IWYU_INPUT_VER: ${{ github.event.inputs.iwyu_version }}
+          CLANG_INPUT_VER: ${{ github.event.inputs.clang_version }}
         run: |
-          # Determine the IWYU version
-          if [ "${{ github.event_name }}" = "release" ]; then
-            IWYU_VER="${{ github.event.release.tag_name }}"
+          # Safe mapping of input version
+          if [ "$EVENT_NAME" = "release" ]; then
+            IWYU_VER="$RELEASE_TAG_NAME"
           else
-            IWYU_VER="${{ github.event.inputs.iwyu_version }}"
+            IWYU_VER="$IWYU_INPUT_VER"
           fi
           
           # Clean version name (strip leading 'v')
           IWYU_VER=$(echo "$IWYU_VER" | sed 's/^v//')
           
           ARGS=(--iwyu-version "$IWYU_VER")
-          if [ -n "${{ github.event.inputs.clang_version }}" ]; then
-            ARGS+=(--clang-version "${{ github.event.inputs.clang_version }}")
+          if [ -n "$CLANG_INPUT_VER" ]; then
+            ARGS+=(--clang-version "$CLANG_INPUT_VER")
           fi
           
           python3 internal/build_iwyu.py "${ARGS[@]}"
@@ -131,6 +140,8 @@ jobs:
     name: Upload to Release
     needs: [build-linux, build-macos]
     runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Restrict write permission to only the release step
     steps:
       - name: Download all artifacts
         uses: actions/download-artifact@v4
@@ -140,12 +151,15 @@ jobs:
       - name: Upload to Github Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          EVENT_NAME: ${{ github.event_name }}
+          RELEASE_TAG_NAME: ${{ github.event.release.tag_name }}
+          IWYU_INPUT_VER: ${{ github.event.inputs.iwyu_version }}
         run: |
           # Determine the release tag name
-          if [ "${{ github.event_name }}" = "release" ]; then
-            TAG_NAME="${{ github.event.release.tag_name }}"
+          if [ "$EVENT_NAME" = "release" ]; then
+            TAG_NAME="$RELEASE_TAG_NAME"
           else
-            TAG_NAME="v${{ github.event.inputs.iwyu_version }}"
+            TAG_NAME="v$IWYU_INPUT_VER"
             # If it's a version string like '0.25.0', prepend 'v' if tag doesn't start with 'v'
             if [[ ! "$TAG_NAME" =~ ^v ]]; then
               TAG_NAME="v$TAG_NAME"
