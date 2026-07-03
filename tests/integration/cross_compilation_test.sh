@@ -4,7 +4,10 @@ set -euo pipefail
 # Resolve sandbox and setup writable workspace
 readonly WRITABLE_WORKSPACE="${TEST_TMPDIR}/writable_workspace"
 mkdir -p "${WRITABLE_WORKSPACE}"
-cp -RL "${BIT_WORKSPACE_DIR}"/. "${WRITABLE_WORKSPACE}/"
+cp -RL "${BIT_WORKSPACE_DIR}"/* "${WRITABLE_WORKSPACE}/"
+if [[ -f "${BIT_WORKSPACE_DIR}/.bazelrc" ]]; then
+  cp -RL "${BIT_WORKSPACE_DIR}/.bazelrc" "${WRITABLE_WORKSPACE}/"
+fi
 chmod -R +w "${WRITABLE_WORKSPACE}"
 
 PARENT_ROOT=$(realpath "${BIT_WORKSPACE_DIR}/../../..")

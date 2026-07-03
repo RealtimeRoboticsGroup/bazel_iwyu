@@ -37,7 +37,7 @@ jobs:
         run: bazel run //tools:format.check
 
       - name: Test Root Workspace
-        run: bazel test //...
+        run: bazel test --test_output=errors //...
 
   test-debian:
     name: Build & Test (Debian Trixie)
@@ -78,4 +78,4 @@ jobs:
           repository-cache: true
 
       - name: Test Root Workspace
-        run: bazel --batch test //...
+        run: bazel --batch test --test_output=errors //...
