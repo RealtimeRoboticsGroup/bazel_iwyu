@@ -32,6 +32,10 @@ jobs:
           disk-cache: ${{ github.workflow }}
           repository-cache: true
 
+      - name: Check Formatting
+        if: matrix.os == 'ubuntu-latest'
+        run: bazel run //tools:format.check
+
       - name: Build Root Workspace
         run: bazel build //...
 
