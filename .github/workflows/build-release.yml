@@ -19,6 +19,7 @@ permissions:
 jobs:
   build-linux:
     name: Build Linux ${{ matrix.arch }}
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.event.release.tag_name, 'iwyu-')
     runs-on: ${{ matrix.runner }}
     container:
       image: ubuntu:22.04
@@ -86,6 +87,7 @@ jobs:
 
   build-macos:
     name: Build macOS ${{ matrix.arch }}
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.event.release.tag_name, 'iwyu-')
     runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
@@ -131,6 +133,7 @@ jobs:
 
   release:
     name: Upload to Release
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.event.release.tag_name, 'iwyu-')
     needs: [build-linux, build-macos]
     runs-on: ubuntu-latest
     permissions:
