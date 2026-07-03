@@ -1,4 +1,4 @@
 examples/boost
 examples/cross_compilation
 examples/gtest
-tests/version_selection/test_workspace
+tests/integration/test_workspace
