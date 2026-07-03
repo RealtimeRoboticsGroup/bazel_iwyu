@@ -15,18 +15,24 @@ def _iwyu_toolchain_impl(ctx):
     # Attempt to locate the Clang resource directory (lib/clang/<version>)
     # to pass it as -resource-dir.
     resource_dir = None
-    for f in ctx.files.data:
-        path = f.path
-        idx = path.find("/lib/clang/")
-        if idx == -1 and path.startswith("lib/clang/"):
-            idx = 0
+    if ctx.files.data:
+        for f in ctx.files.data:
+            path = f.path
+            parts = path.split("/")
 
-        if idx != -1:
-            start_idx = idx + 10 if idx == 0 else idx + 11  # len("lib/clang/") or len("/lib/clang/")
-            slash_idx = path.find("/", start_idx)
-            if slash_idx != -1:
-                resource_dir = path[:slash_idx]
-                break
+            # We expect the path to contain "lib", "clang", and "include" in a strict sequence:
+            # .../lib/clang/<version>/include/...
+            lib_idx = -1
+            for i in range(len(parts) - 3):
+                if parts[i] == "lib" and parts[i + 1] == "clang" and parts[i + 3] == "include":
+                    lib_idx = i
+                    break
+
+            if lib_idx == -1:
+                fail("Expected toolchain data file path to contain 'lib/clang/<version>/include/...', but got: {}".format(path))
+
+            resource_dir = "/".join(parts[:lib_idx + 3])
+            break
 
     resource_dir_flag = ""
     if resource_dir:
