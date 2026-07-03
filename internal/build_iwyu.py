@@ -11,17 +11,6 @@ import sys
 import tempfile
 import urllib.request
 
-# Hardcoded fallback versions for LLVM if the GitHub API is unavailable or rate-limited.
-LLVM_FALLBACKS = {
-    16: "16.0.4",
-    17: "17.0.6",
-    18: "18.1.8",
-    19: "19.1.7",
-    20: "20.1.0",
-    21: "21.1.0",
-    22: "22.1.0",
-}
-
 def parse_args():
     parser = argparse.ArgumentParser(description="Build include-what-you-use from source.")
     parser.add_argument(
@@ -37,7 +26,7 @@ def parse_args():
     parser.add_argument(
         "--output-dir",
         default=".",
-        help="Directory to save the built tar.xz package."
+        help="Directory to save the built tar.zst package."
     )
     return parser.parse_args()
 
@@ -91,9 +80,8 @@ def get_llvm_release_info(clang_major, token=None):
             print(f"Found LLVM release: {latest['tag_name']}")
             return latest
     except Exception as e:
-        print(f"Warning: Failed to fetch releases from GitHub API: {e}")
+        print(f"Error: Failed to fetch releases from GitHub API: {e}")
         
-    print("Falling back to hardcoded LLVM version mapping.")
     return None
 
 def find_llvm_asset(release, arch):
@@ -188,41 +176,16 @@ def main():
             os.makedirs(llvm_dir, exist_ok=True)
             token = os.environ.get("GITHUB_TOKEN")
             release = get_llvm_release_info(clang_major, token)
+            if not release:
+                sys.exit(f"Error: Could not retrieve LLVM release info from GitHub API for version {clang_major}.")
             
-            llvm_url = None
-            llvm_filename = None
-            if release:
-                llvm_url, llvm_filename = find_llvm_asset(release, arch)
-                
+            llvm_url, llvm_filename = find_llvm_asset(release, arch)
             if not llvm_url:
-                # Fallback construct
-                fallback_ver = LLVM_FALLBACKS.get(clang_major)
-                if not fallback_ver:
-                    sys.exit(f"Error: No LLVM version mapping found for major version {clang_major}")
-                print(f"Using fallback LLVM version: {fallback_ver}")
-                # Construct standard asset names
-                if arch == "x86_64":
-                    llvm_filename = f"clang+llvm-{fallback_ver}-x86_64-linux-gnu-ubuntu-22.04.tar.xz"
-                else:
-                    llvm_filename = f"clang+llvm-{fallback_ver}-aarch64-linux-gnu.tar.xz"
-                    
-                llvm_url = f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{fallback_ver}/{llvm_filename}"
+                sys.exit(f"Error: Could not locate LLVM download asset for {arch} in release {release.get('tag_name')}.")
                 
             llvm_tar = os.path.join(tmpdir, llvm_filename)
-            try:
-                download_file(llvm_url, llvm_tar)
-            except Exception as e:
-                # If standard Ubuntu 22.04 URL fails for x86_64, try Ubuntu 20.04 or generic linux-gnu
-                if arch == "x86_64" and "ubuntu-22.04" in llvm_filename:
-                    fallback_ver = LLVM_FALLBACKS.get(clang_major)
-                    llvm_filename = f"clang+llvm-{fallback_ver}-x86_64-linux-gnu-ubuntu-20.04.tar.xz"
-                    llvm_url = f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{fallback_ver}/{llvm_filename}"
-                    print(f"Retrying with Ubuntu 20.04 asset: {llvm_url}")
-                    llvm_tar = os.path.join(tmpdir, llvm_filename)
-                    download_file(llvm_url, llvm_tar)
-                else:
-                    raise e
-                    
+            download_file(llvm_url, llvm_tar)
+                
             print("Extracting LLVM...")
             subprocess.run(
                 ["tar", "xJf", llvm_tar, "--strip-components=1", "-C", llvm_dir],
@@ -304,17 +267,22 @@ def main():
         os.makedirs(os.path.dirname(dest_include_dir), exist_ok=True)
         shutil.copytree(clang_include_src, dest_include_dir, dirs_exist_ok=True)
         
-        # 6. Tar it up
-        output_filename = f"iwyu-{iwyu_version}-{arch}-{os_suffix}.tar.xz"
+        # 6. Compress using tar and zstd -21 --ultra
+        output_filename = f"iwyu-{iwyu_version}-{arch}-{os_suffix}.tar.zst"
         output_path = os.path.abspath(os.path.join(args.output_dir, output_filename))
         
-        print(f"Packaging into {output_path}...")
-        # Pack target folder. We use tar command to ensure strip-components or directory format matches.
-        subprocess.run(
-            ["tar", "-cJf", output_path, os.path.basename(dest_dir)],
-            cwd=os.path.dirname(dest_dir),
-            check=True
-        )
+        print(f"Packaging into {output_path} with zstd -21 --ultra...")
+        
+        tar_cmd = ["tar", "-cf", "-", os.path.basename(dest_dir)]
+        zstd_cmd = ["zstd", "-21", "--ultra", "-o", output_path]
+        
+        p_tar = subprocess.Popen(tar_cmd, cwd=os.path.dirname(dest_dir), stdout=subprocess.PIPE)
+        p_zstd = subprocess.Popen(zstd_cmd, stdin=p_tar.stdout, stdout=subprocess.PIPE)
+        p_tar.stdout.close()
+        p_zstd.communicate()
+        
+        if p_tar.wait() != 0 or p_zstd.wait() != 0:
+            sys.exit("Error: Failed to package artifact using tar and zstd.")
         
         print(f"Successfully built and packaged IWYU to {output_path}")
 

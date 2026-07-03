@@ -52,7 +52,8 @@ jobs:
             libtinfo-dev \
             zlib1g-dev \
             libzstd-dev \
-            xz-utils
+            xz-utils \
+            zstd
 
       - name: Build IWYU
         env:
@@ -83,7 +84,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: iwyu-binaries-linux-${{ matrix.arch }}
-          path: iwyu-*.tar.xz
+          path: iwyu-*.tar.zst
           if-no-files-found: error
           retention-days: 1
 
@@ -132,7 +133,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: iwyu-binaries-macos-${{ matrix.arch }}
-          path: iwyu-*.tar.xz
+          path: iwyu-*.tar.zst
           if-no-files-found: error
           retention-days: 1
 
@@ -175,4 +176,4 @@ jobs:
           fi
           
           # Upload files using gh CLI
-          find artifacts -type f -name "iwyu-*.tar.xz" -print0 | xargs -0 -I {} gh release upload "$TAG_NAME" "{}" --clobber
+          find artifacts -type f -name "iwyu-*.tar.zst" -print0 | xargs -0 -I {} gh release upload "$TAG_NAME" "{}" --clobber
