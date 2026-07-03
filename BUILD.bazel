@@ -53,5 +53,7 @@ filegroup(
 
 sh_binary(
     name = "fix_includes",
-    srcs = ["@iwyu_prebuilt_pkg//:bin/fix_includes.py"],
+    srcs = ["fix_includes_wrapper.py"],
+    data = ["@iwyu_prebuilt_pkg//:bin/fix_includes.py"],
+    visibility = ["//visibility:public"],
 )
