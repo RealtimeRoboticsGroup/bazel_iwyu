@@ -70,12 +70,11 @@ jobs:
             IWYU_VER="$IWYU_INPUT_VER"
           fi
           
-          ARGS=(--iwyu-version "$IWYU_VER")
           if [ -n "$CLANG_INPUT_VER" ]; then
-            ARGS+=(--clang-version "$CLANG_INPUT_VER")
+            python3 internal/build_iwyu.py --iwyu-version "$IWYU_VER" --clang-version "$CLANG_INPUT_VER"
+          else
+            python3 internal/build_iwyu.py --iwyu-version "$IWYU_VER"
           fi
-          
-          python3 internal/build_iwyu.py "${ARGS[@]}"
 
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v4
@@ -116,12 +115,11 @@ jobs:
             IWYU_VER="$IWYU_INPUT_VER"
           fi
           
-          ARGS=(--iwyu-version "$IWYU_VER")
           if [ -n "$CLANG_INPUT_VER" ]; then
-            ARGS+=(--clang-version "$CLANG_INPUT_VER")
+            python3 internal/build_iwyu.py --iwyu-version "$IWYU_VER" --clang-version "$CLANG_INPUT_VER"
+          else
+            python3 internal/build_iwyu.py --iwyu-version "$IWYU_VER"
           fi
-          
-          python3 internal/build_iwyu.py "${ARGS[@]}"
 
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v4
