@@ -1,15 +1,24 @@
 #!/usr/bin/env python3
 import argparse
 import glob
-import json
 import os
 import platform
-import re
 import shutil
 import subprocess
 import sys
 import tempfile
 import urllib.request
+
+# Hardcoded, reproducible mapping of Clang major versions to verified LLVM releases.
+LLVM_VERSIONS = {
+    16: "16.0.6",
+    17: "17.0.6",
+    18: "18.1.8",
+    19: "19.1.0",
+    20: "20.1.0",
+    21: "21.1.8",
+    22: "22.1.8",
+}
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Build include-what-you-use from source.")
@@ -42,62 +51,25 @@ def get_iwyu_versions(version_str):
     major_minor = f"{major}.{minor}"
     return iwyu_version, major_minor, minor
 
-def get_llvm_release_info(clang_major, token=None):
-    print(f"Querying GitHub API for LLVM major version {clang_major} release...")
-    url = "https://api.github.com/repos/llvm/llvm-project/releases"
-    req = urllib.request.Request(url, headers={"User-Agent": "bazel_iwyu-build-script"})
-    
-    if token:
-        req.add_header("Authorization", f"token {token}")
+def get_llvm_download_info(clang_major, arch):
+    version = LLVM_VERSIONS.get(clang_major)
+    if not version:
+        sys.exit(f"Error: No hardcoded LLVM release version found for Clang major version {clang_major}.")
         
-    try:
-        with urllib.request.urlopen(req) as response:
-            releases = json.loads(response.read().decode())
-            
-        # Match llvmorg-<clang_major>.*.*
-        pattern = re.compile(rf"^llvmorg-{clang_major}\.\d+\.\d+$")
-        matching = []
-        for r in releases:
-            tag = r.get("tag_name", "")
-            if pattern.match(tag):
-                matching.append(r)
-                
-        if not matching:
-            # Fallback to double-component tags e.g. llvmorg-16.0
-            pattern_short = re.compile(rf"^llvmorg-{clang_major}\.\d+$")
-            for r in releases:
-                tag = r.get("tag_name", "")
-                if pattern_short.match(tag):
-                    matching.append(r)
-                    
-        if matching:
-            # Sort by version tuple descending
-            def version_key(release):
-                v_str = release["tag_name"].replace("llvmorg-", "")
-                return [int(x) for x in v_str.split(".")]
-            matching.sort(key=version_key, reverse=True)
-            latest = matching[0]
-            print(f"Found LLVM release: {latest['tag_name']}")
-            return latest
-    except Exception as e:
-        print(f"Error: Failed to fetch releases from GitHub API: {e}")
+    if arch == "x86_64":
+        # LLVM releases on x86_64 target specific Ubuntu versions.
+        # 18.1.8 targets Ubuntu 18.04, others target Ubuntu 22.04.
+        if version == "18.1.8":
+            os_suffix = "-ubuntu-18.04"
+        else:
+            os_suffix = "-ubuntu-22.04"
+        filename = f"clang+llvm-{version}-x86_64-linux-gnu{os_suffix}.tar.xz"
+    else:
+        # aarch64 has no OS suffix in official LLVM releases.
+        filename = f"clang+llvm-{version}-aarch64-linux-gnu.tar.xz"
         
-    return None
-
-def find_llvm_asset(release, arch):
-    assets = release.get("assets", [])
-    for asset in assets:
-        name = asset.get("name", "")
-        if not name.endswith(".tar.xz"):
-            continue
-        if "asserts" in name:
-            continue
-        if arch not in name:
-            continue
-        if "linux" not in name:
-            continue
-        return asset.get("browser_download_url"), name
-    return None, None
+    url = f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{version}/{filename}"
+    return filename, url
 
 def download_file(url, dest_path):
     print(f"Downloading {url} to {dest_path}...")
@@ -174,15 +146,9 @@ def main():
             print(f"Using macOS LLVM path: {llvm_dir}")
         else:
             os.makedirs(llvm_dir, exist_ok=True)
-            token = os.environ.get("GITHUB_TOKEN")
-            release = get_llvm_release_info(clang_major, token)
-            if not release:
-                sys.exit(f"Error: Could not retrieve LLVM release info from GitHub API for version {clang_major}.")
             
-            llvm_url, llvm_filename = find_llvm_asset(release, arch)
-            if not llvm_url:
-                sys.exit(f"Error: Could not locate LLVM download asset for {arch} in release {release.get('tag_name')}.")
-                
+            # Deterministic lookup
+            llvm_filename, llvm_url = get_llvm_download_info(clang_major, arch)
             llvm_tar = os.path.join(tmpdir, llvm_filename)
             download_file(llvm_url, llvm_tar)
                 
