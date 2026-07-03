@@ -32,6 +32,10 @@ jobs:
           disk-cache: ${{ github.workflow }}
           repository-cache: true
 
+      - name: Install LLVM 20 (macOS)
+        if: matrix.os == 'macos-latest'
+        run: brew install llvm@20
+
       - name: Check Formatting
         if: matrix.os == 'ubuntu-latest'
         run: bazel run //tools:format.check
@@ -54,7 +58,8 @@ jobs:
             git \
             build-essential \
             unzip \
-            python3
+            python3 \
+            libxml2
 
       - name: Install Bazelisk
         run: |
