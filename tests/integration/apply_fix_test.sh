@@ -1,6 +1,10 @@
 #!/bin/bash
 set -euo pipefail
 
+# Set HOME inside the test temp dir to avoid sandbox access issues on macOS
+export HOME="${TEST_TMPDIR}/home"
+mkdir -p "${HOME}"
+
 # Resolve sandbox and setup writable workspace
 readonly WRITABLE_WORKSPACE="${TEST_TMPDIR}/writable_workspace"
 mkdir -p "${WRITABLE_WORKSPACE}"
