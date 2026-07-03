@@ -8,5 +8,5 @@ local_path_override(
 )
 
 iwyu = use_extension("@bazel_iwyu//:extensions.bzl", "iwyu")
-iwyu.toolchain(version = "0.24.2")
+iwyu.toolchain(version = "0.24.0")
 use_repo(iwyu, "iwyu_prebuilt_pkg")

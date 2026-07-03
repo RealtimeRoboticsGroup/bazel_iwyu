@@ -36,7 +36,7 @@ def _iwyu_impl(module_ctx):
 toolchain_tag = tag_class(
     attrs = {
         "version": attr.string(
-            doc = "The prebuilt IWYU version to use (e.g. '0.24.2', '0.25.2').",
+            doc = "The prebuilt IWYU version to use (e.g. '0.24.0', '0.25.0').",
             default = DEFAULT_VERSION,
         ),
     },
