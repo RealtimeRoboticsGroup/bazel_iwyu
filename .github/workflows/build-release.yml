@@ -1,0 +1,164 @@
+name: Build and Release IWYU
+
+on:
+  release:
+    types: [published, created]
+  workflow_dispatch:
+    inputs:
+      iwyu_version:
+        description: 'IWYU version to build (e.g. 0.25.0)'
+        required: true
+      clang_version:
+        description: 'Clang version to use (optional, defaults to IWYU minor - 4)'
+        required: false
+
+permissions:
+  contents: write
+
+jobs:
+  build-linux:
+    name: Build Linux ${{ matrix.arch }}
+    runs-on: ${{ matrix.runner }}
+    container:
+      image: ubuntu:22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x86_64
+            runner: ubuntu-24.04
+          - arch: aarch64
+            runner: ubuntu-24.04-arm64
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends \
+            ca-certificates \
+            curl \
+            wget \
+            git \
+            patch \
+            cmake \
+            make \
+            gcc \
+            g++ \
+            python3 \
+            libtinfo-dev \
+            zlib1g-dev \
+            libzstd-dev \
+            xz-utils
+
+      - name: Build IWYU
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Determine the IWYU version
+          if [ "${{ github.event_name }}" = "release" ]; then
+            IWYU_VER="${{ github.event.release.tag_name }}"
+          else
+            IWYU_VER="${{ github.event.inputs.iwyu_version }}"
+          fi
+          
+          # Clean version name (strip leading 'v')
+          IWYU_VER=$(echo "$IWYU_VER" | sed 's/^v//')
+          
+          ARGS=(--iwyu-version "$IWYU_VER")
+          if [ -n "${{ github.event.inputs.clang_version }}" ]; then
+            ARGS+=(--clang-version "${{ github.event.inputs.clang_version }}")
+          fi
+          
+          python3 internal/build_iwyu.py "${ARGS[@]}"
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: iwyu-binaries-linux-${{ matrix.arch }}
+          path: iwyu-*.tar.xz
+          if-no-files-found: error
+          retention-days: 1
+
+  build-macos:
+    name: Build macOS ${{ matrix.arch }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x86_64
+            runner: macos-13
+          - arch: arm64
+            runner: macos-14
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build IWYU
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Determine the IWYU version
+          if [ "${{ github.event_name }}" = "release" ]; then
+            IWYU_VER="${{ github.event.release.tag_name }}"
+          else
+            IWYU_VER="${{ github.event.inputs.iwyu_version }}"
+          fi
+          
+          # Clean version name (strip leading 'v')
+          IWYU_VER=$(echo "$IWYU_VER" | sed 's/^v//')
+          
+          ARGS=(--iwyu-version "$IWYU_VER")
+          if [ -n "${{ github.event.inputs.clang_version }}" ]; then
+            ARGS+=(--clang-version "${{ github.event.inputs.clang_version }}")
+          fi
+          
+          python3 internal/build_iwyu.py "${ARGS[@]}"
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: iwyu-binaries-macos-${{ matrix.arch }}
+          path: iwyu-*.tar.xz
+          if-no-files-found: error
+          retention-days: 1
+
+  release:
+    name: Upload to Release
+    needs: [build-linux, build-macos]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Upload to Github Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Determine the release tag name
+          if [ "${{ github.event_name }}" = "release" ]; then
+            TAG_NAME="${{ github.event.release.tag_name }}"
+          else
+            TAG_NAME="v${{ github.event.inputs.iwyu_version }}"
+            # If it's a version string like '0.25.0', prepend 'v' if tag doesn't start with 'v'
+            if [[ ! "$TAG_NAME" =~ ^v ]]; then
+              TAG_NAME="v$TAG_NAME"
+            fi
+          fi
+          
+          echo "Targeting release/tag: $TAG_NAME"
+          
+          # If workflow_dispatch and the release draft/tag doesn't exist, create a draft release first
+          if ! gh release view "$TAG_NAME" >/dev/null 2>&1; then
+            echo "Release $TAG_NAME not found. Creating a draft release..."
+            gh release create "$TAG_NAME" --draft --title "Release $TAG_NAME" --notes "Automated build of Include What You Use."
+          fi
+          
+          # Upload files using gh CLI
+          find artifacts -type f -name "iwyu-*.tar.xz" -print0 | xargs -0 -I {} gh release upload "$TAG_NAME" "{}" --clobber

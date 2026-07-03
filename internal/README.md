@@ -1,39 +1,61 @@
-# Steps to Build IWYU 0.20
-The Dockerfile is set up to build in two stages. First, you will build the builder container. Second, you will export the output files into a tar package.
+# Building Include What You Use (IWYU)
 
-## Building IWYU using the Dockerfile
-From the root of the repo:
+This repository automatically builds and packages self-contained `include-what-you-use` binaries for both `x86_64` and `aarch64` architectures.
+
+---
+
+## 1. Automated Builds (GitHub Actions)
+
+When a GitHub release is created or published, the [.github/workflows/build-release.yml](file:///home/austin/local/bazel_iwyu/.github/workflows/build-release.yml) workflow is triggered automatically:
+1. It reads the release version tag (e.g. `0.25.0` or `0.20`).
+2. It spins up two runners (native `x86_64` and native `aarch64`) running inside an `ubuntu:22.04` container to guarantee glibc compatibility (`glibc 2.35`).
+3. It downloads the matching LLVM/Clang release compiler from LLVM's official GitHub releases.
+4. It compiles and packages IWYU, embedding the required Clang compiler header files inside the archive.
+5. It uploads the resulting `.tar.xz` archives back to the GitHub release.
+
+You can also run this workflow manually from the GitHub Actions tab via **Workflow Dispatch**, entering the target IWYU version and Clang version.
+
+---
+
+## 2. Local Builds (with Python)
+
+The build process is fully automated by the python script [internal/build_iwyu.py](file:///home/austin/local/bazel_iwyu/internal/build_iwyu.py).
+
+### Prerequisites
+Make sure you have build dependencies installed:
+```bash
+sudo apt-get install -y cmake build-essential python3 libtinfo-dev zlib1g-dev libzstd-dev xz-utils patch
 ```
-cd internal
-docker build -f docker/ubuntu2204.builder.dockerfile --tag=bazel_iwyu/builder .
+
+### Running the Build
+To build IWYU 0.25.0 against Clang 21:
+```bash
+python3 internal/build_iwyu.py --iwyu-version 0.25.0
 ```
 
-### Export build artifacts for x86_64
-
-```
-docker build -f docker/ubuntu2204.dockerfile --output type=local,dest=iwyu-0.20-x86_64-linux-gnu --target=x86_64 .
-```
-
-### Export build artifacts for aarch64
-```
-docker build -f docker/ubuntu2204.dockerfile --output type=local,dest=iwyu-0.20-aarch64-linux-gnu --target=aarch64 .
+By default, the script calculates the Clang major version to use based on the IWYU minor version (`minor - 4`). You can override this using `--clang-version`:
+```bash
+python3 internal/build_iwyu.py --iwyu-version 0.25.0 --clang-version 21
 ```
 
-## Post-build
-A directory containing the build artifacts will be located at: `internal/iwyu-0.20-{ARCH}-linux-gnu`
+The script will:
+1. Search GitHub LLVM releases to download the appropriate pre-compiled LLVM compiler to `/tmp`.
+2. Fetch and extract the IWYU source tag from GitHub.
+3. Automatically apply patches found in `internal/patches/<version>/` or `internal/patches/<major_minor>/` (e.g., [internal/patches/0.20/p01_angle_quote_curse_dirty_fix.patch](file:///home/austin/local/bazel_iwyu/internal/patches/0.20/p01_angle_quote_curse_dirty_fix.patch)).
+4. Compile and install IWYU into a release folder, bundle Clang's internal headers, and package it as `iwyu-<version>-<arch>-linux-gnu.tar.xz`.
 
-To package this folder as a `.tar.xz`:
+---
+
+## 3. Local Builds using Docker (For GLIBC compatibility)
+
+To ensure the built binaries are compatible with older Linux platforms (e.g. Debian 12, Ubuntu 22.04), you should build inside an `ubuntu:22.04` docker container so that it links against `glibc 2.35`:
+
+```bash
+docker run -it --rm \
+  -v "$(pwd):/workspace" \
+  -w /workspace \
+  ubuntu:22.04 \
+  bash -c "apt-get update && apt-get install -y cmake build-essential python3 libtinfo-dev zlib1g-dev libzstd-dev xz-utils patch ca-certificates wget curl git && python3 internal/build_iwyu.py --iwyu-version 0.25.0"
 ```
-tar -cJf iwyu-0.20-{ARCH}-linux-gnu.tar.xz iwyu-0.20-{ARCH}-linux-gnu/
-```
 
-# Additional Notes
-1. You may need to enable [BuildKit](https://docs.docker.com/build/buildkit/) if your Docker Engine < 23.x.
-   E.g., by setting `DOCKER_BUILDKIT=1` before running `docker build` command.
-
-2. About angle-bracket-curse
-   In the steps above, a patch named `p01_angle_quote_curse_dirty_fix.patch` was applied to workaround the
-   "angle-quote-curse" issue. See [IWYU Issues on angle-quote-curse](https://github.com/include-what-you-use/include-what-you-use/issues?q=angle+label%3Aangle-quote-curse) for details.
-   We should remove it once upstream has the forementioned issue fixed.
-
-
+The built tarball `iwyu-0.25.0-x86_64-linux-gnu.tar.xz` will be output to your host's current working directory.
