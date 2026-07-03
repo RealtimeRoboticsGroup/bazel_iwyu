@@ -27,8 +27,8 @@ toolchain_type(name = "toolchain_type")
 
 iwyu_toolchain(
     name = "iwyu_prebuilt_toolchain_impl",
-    iwyu_tool = "@iwyu_prebuilt_pkg//:bin/include-what-you-use",
     data = ["@iwyu_prebuilt_pkg//:include"],
+    iwyu_tool = "@iwyu_prebuilt_pkg//:bin/include-what-you-use",
 )
 
 toolchain(

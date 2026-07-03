@@ -150,8 +150,6 @@ def _iwyu_aspect_impl(target, ctx):
     iwyu_executable = iwyu_toolchain.iwyu_info.iwyu_executable
     iwyu_runfiles = iwyu_toolchain.iwyu_info.iwyu_runfiles
 
-
-
     iwyu_mappings = ctx.attr._iwyu_mappings.files.to_list()
     iwyu_options = ctx.attr._iwyu_opts[BuildSettingInfo].value
 

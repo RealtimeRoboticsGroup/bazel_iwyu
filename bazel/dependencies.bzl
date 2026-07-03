@@ -1,5 +1,5 @@
-load("@bazel_iwyu//bazel/iwyu:versions.bzl", "DEFAULT_VERSION", "SUPPORTED_VERSIONS")
 load("@bazel_iwyu//bazel:prebuilt_pkg.bzl", "prebuilt_pkg")
+load("@bazel_iwyu//bazel/iwyu:versions.bzl", "DEFAULT_VERSION", "SUPPORTED_VERSIONS")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
 
