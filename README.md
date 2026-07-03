@@ -100,7 +100,7 @@ external/iwyu_prebuilt_pkg/bin/fix_includes.py --nosafe_headers < bazel-bin/path
 
 ## Features
 
-1. [x] Support `x86_64` and `aarch64` on Linux, and `x86_64` and `arm64` on macOS.
+1. [x] Support `x86_64` and `aarch64` on Linux, and `arm64` on macOS.
 2. [x] No compilation database needed.
 3. [x] Support custom IWYU mapping files.
 4. [x] Support custom IWYU options.
