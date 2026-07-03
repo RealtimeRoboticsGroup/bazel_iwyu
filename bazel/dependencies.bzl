@@ -1,6 +1,6 @@
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
-load("@com_github_storypku_bazel_iwyu//bazel:prebuilt_pkg.bzl", "prebuilt_pkg")
+load("@bazel_iwyu//bazel:prebuilt_pkg.bzl", "prebuilt_pkg")
 
 def bazel_iwyu_dependencies():
     maybe(
