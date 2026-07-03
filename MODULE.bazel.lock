@@ -300,7 +300,7 @@
   "moduleExtensions": {
     "//:extensions.bzl%iwyu": {
       "general": {
-        "bzlTransitiveDigest": "5sP+Dd7Up0GltSFQ564bEBSq2E03CWrORy8TE/BKB3A=",
+        "bzlTransitiveDigest": "l0DwmO0Y7o3/Rk1LESn4aZPYlfdcsaJuMxIZlhe0jHo=",
         "usagesDigest": "MkZ34Tfg1PCiN31WbE7H+WWmrCaH8dHKVUvIgBBOIlk=",
         "recordedInputs": [],
         "generatedRepoSpecs": {
