@@ -61,14 +61,19 @@ def get_iwyu_versions(version_str):
     return iwyu_version, major_minor, minor
 
 
-def get_llvm_download_info(clang_major, arch):
+def get_llvm_download_info(clang_major, arch, is_darwin=False):
     version = LLVM_VERSIONS.get(clang_major)
     if not version:
         sys.exit(
             f"Error: No hardcoded LLVM release version found for Clang major version {clang_major}."
         )
 
-    if arch == "x86_64":
+    arch_str = "aarch64" if arch in ("arm64", "aarch64") else arch
+
+    if is_darwin:
+        # macOS/Darwin releases (aarch64-apple-darwin)
+        filename = f"clang+llvm-{version}-{arch_str}-apple-darwin.tar.zst"
+    elif arch_str == "x86_64":
         # LLVM releases on x86_64 target specific Ubuntu versions.
         # 18.1.8 targets Ubuntu 18.04, others target Ubuntu 22.04.
         if version == "18.1.8":
@@ -167,39 +172,17 @@ def main():
     with tempfile.TemporaryDirectory(prefix="iwyu-build-") as tmpdir:
         llvm_dir = os.path.join(tmpdir, "llvm")
 
-        # 1. Install or download LLVM
-        if is_darwin:
-            print(f"Installing LLVM {clang_major} via Homebrew...")
-            formula = f"llvm@{clang_major}"
-            try:
-                subprocess.run(["brew", "install", formula], check=True)
-            except subprocess.CalledProcessError:
-                print(
-                    f"Versioned formula {formula} not found or failed. Trying generic 'llvm'..."
-                )
-                formula = "llvm"
-                subprocess.run(["brew", "install", formula], check=True)
+        # 1. Download and extract LLVM
+        os.makedirs(llvm_dir, exist_ok=True)
 
-            # Get the installation prefix
-            prefix_proc = subprocess.run(
-                ["brew", "--prefix", formula],
-                capture_output=True,
-                text=True,
-                check=True,
-            )
-            llvm_dir = prefix_proc.stdout.strip()
-            print(f"Using macOS LLVM path: {llvm_dir}")
-        else:
-            os.makedirs(llvm_dir, exist_ok=True)
+        # Deterministic lookup
+        llvm_filename, llvm_url = get_llvm_download_info(clang_major, arch, is_darwin)
+        llvm_tar = os.path.join(tmpdir, llvm_filename)
+        download_file(llvm_url, llvm_tar)
 
-            # Deterministic lookup
-            llvm_filename, llvm_url = get_llvm_download_info(clang_major, arch)
-            llvm_tar = os.path.join(tmpdir, llvm_filename)
-            download_file(llvm_url, llvm_tar)
-
-            print("Extracting LLVM...")
-            subprocess.run(["tar", "-xf", llvm_tar, "-C", llvm_dir], check=True)
-            normalize_extracted_dir(llvm_dir)
+        print("Extracting LLVM...")
+        subprocess.run(["tar", "-xf", llvm_tar, "-C", llvm_dir], check=True)
+        normalize_extracted_dir(llvm_dir)
 
         # 2. Download and extract IWYU source
         # Upstream include-what-you-use tags are always exactly major.minor (e.g. 0.25)
