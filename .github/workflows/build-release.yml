@@ -159,10 +159,10 @@ jobs:
           echo "Targeting release/tag: $TAG_NAME"
           
           # If workflow_dispatch and the release draft/tag doesn't exist, create a draft release first
-          if ! gh release view "$TAG_NAME" >/dev/null 2>&1; then
+          if ! gh release view "$TAG_NAME" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             echo "Release $TAG_NAME not found. Creating a draft release..."
-            gh release create "$TAG_NAME" --draft --title "Release $TAG_NAME" --notes "Automated build of Include What You Use."
+            gh release create "$TAG_NAME" -R "$GITHUB_REPOSITORY" --draft --title "Release $TAG_NAME" --notes "Automated build of Include What You Use."
           fi
           
           # Upload files using gh CLI
-          find artifacts -type f -name "iwyu-*.tar.zst" -print0 | xargs -0 -I {} gh release upload "$TAG_NAME" "{}" --clobber
+          find artifacts -type f -name "iwyu-*.tar.zst" -print0 | xargs -0 -I {} gh release upload "$TAG_NAME" "{}" -R "$GITHUB_REPOSITORY" --clobber
