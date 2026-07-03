@@ -40,7 +40,11 @@ def parse_args():
     return parser.parse_args()
 
 def get_iwyu_versions(version_str):
-    iwyu_version = version_str.lstrip("v")
+    iwyu_version = version_str
+    if iwyu_version.startswith("v"):
+        iwyu_version = iwyu_version[1:]
+    elif iwyu_version.startswith("iwyu-"):
+        iwyu_version = iwyu_version[5:]
     # Parse major/minor/patch
     parts = iwyu_version.split(".")
     if len(parts) < 2:
