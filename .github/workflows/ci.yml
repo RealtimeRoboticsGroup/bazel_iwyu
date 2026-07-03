@@ -44,3 +44,43 @@ jobs:
         run: |
           cd examples/boost
           bazel build //...
+
+  test-debian:
+    name: Build & Test (Debian Trixie)
+    runs-on: ubuntu-latest
+    container:
+      image: debian:trixie-slim
+    steps:
+      - name: Install dependencies
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends \
+            ca-certificates \
+            curl \
+            git \
+            build-essential \
+            unzip \
+            python3
+
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Setup Bazel
+        uses: bazel-contrib/setup-bazel@0.9.1
+        with:
+          bazelisk-cache: true
+          disk-cache: ${{ github.workflow }}
+          repository-cache: true
+
+      - name: Build Root Workspace
+        run: bazel build //...
+
+      - name: Test GTest Example
+        run: |
+          cd examples/gtest
+          bazel test //...
+
+      - name: Build Boost Example
+        run: |
+          cd examples/boost
+          bazel build //...
