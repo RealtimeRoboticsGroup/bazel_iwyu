@@ -66,7 +66,7 @@ fi
     )
 
     runfiles = ctx.runfiles(
-        files = ctx.files.data,
+        files = ctx.files.data + [ctx.file.iwyu_tool],
     ).merge(
         ctx.attr.iwyu_tool[DefaultInfo].default_runfiles,
     )
@@ -91,7 +91,7 @@ iwyu_toolchain = rule(
             mandatory = True,
             executable = True,
             cfg = "exec",
-            allow_files = True,
+            allow_single_file = True,
         ),
         "data": attr.label_list(
             allow_files = True,
