@@ -3,10 +3,13 @@
 def _prebuilt_pkg_impl(repository_ctx):
     # Targets Linux and MacOS only for now.
     arch = repository_ctx.execute(["uname", "-m"]).stdout.strip()
-    key = "{}-{}".format(repository_ctx.os.name.lower(), arch)
+    os_name = repository_ctx.os.name.lower()
+    if os_name == "mac os x":
+        os_name = "macos"
+    key = "{}-{}".format(os_name, arch)
 
     if key not in repository_ctx.attr.urls:
-        fail("Unsupported arch: {}".format(arch))
+        fail("Unsupported arch/OS combination: {}".format(key))
 
     build_file = repository_ctx.attr.build_file
     repository_ctx.symlink(build_file, "BUILD.bazel")
