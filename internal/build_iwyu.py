@@ -202,9 +202,9 @@ def main():
             normalize_extracted_dir(llvm_dir)
 
         # 2. Download and extract IWYU source
-        upstream_tag = iwyu_version
-        if upstream_tag.endswith(".0"):
-            upstream_tag = upstream_tag[:-2]
+        # Upstream include-what-you-use tags are always exactly major.minor (e.g. 0.25)
+        # without patch versions.
+        upstream_tag = major_minor
 
         iwyu_src_dir = os.path.join(tmpdir, f"include-what-you-use-{iwyu_version}")
         iwyu_url = f"https://github.com/include-what-you-use/include-what-you-use/archive/refs/tags/{upstream_tag}.tar.gz"
@@ -232,17 +232,25 @@ def main():
         env["CXX"] = os.path.join(llvm_dir, "bin", "clang++")
 
         print("Configuring CMake...")
+        cmake_args = [
+            "cmake",
+            "-G",
+            "Unix Makefiles",
+            "..",
+            "-DCMAKE_BUILD_TYPE=Release",
+            f"-DCMAKE_PREFIX_PATH={llvm_dir}",
+            "-DCMAKE_VERBOSE_MAKEFILE=ON",
+            f"-DCMAKE_INSTALL_PREFIX={dest_dir}",
+        ]
+        if is_darwin:
+            cmake_args.extend(
+                [
+                    "-DCMAKE_FIND_LIBRARY_SUFFIXES=.a",
+                    "-DIWYU_LINK_CLANG_DYLIB=OFF",
+                ]
+            )
         subprocess.run(
-            [
-                "cmake",
-                "-G",
-                "Unix Makefiles",
-                "..",
-                "-DCMAKE_BUILD_TYPE=Release",
-                f"-DCMAKE_PREFIX_PATH={llvm_dir}",
-                "-DCMAKE_VERBOSE_MAKEFILE=ON",
-                f"-DCMAKE_INSTALL_PREFIX={dest_dir}",
-            ],
+            cmake_args,
             cwd=build_dir,
             env=env,
             check=True,
