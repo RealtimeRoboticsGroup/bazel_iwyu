@@ -1,4 +1,5 @@
 load("@bazel_skylib//rules:common_settings.bzl", "string_list_flag")
+load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -48,4 +49,9 @@ filegroup(
         "//bazel/iwyu:versions.bzl",
     ],
     visibility = ["//visibility:public"],
+)
+
+sh_binary(
+    name = "fix_includes",
+    srcs = ["@iwyu_prebuilt_pkg//:bin/fix_includes.py"],
 )

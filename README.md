@@ -86,17 +86,38 @@ bazel build --config=iwyu //path/to/pkg:target
 
 ### Applying Fixes
 
+The recommended way to apply the suggested fixes is to use `bazel run`:
+
+```shell
+bazel run @bazel_iwyu//:fix_includes -- --nosafe_headers < bazel-bin/path/to/pkg/<target>.iwyu.txt
+```
+
+You can also process all reports across your workspace in a single pass:
+
+```shell
+find -L bazel-bin/ -name "*.iwyu.txt" | xargs cat | bazel run @bazel_iwyu//:fix_includes -- --nosafe_headers
+```
+
+#### Manual Path (Alternative)
+
+If you prefer to run the script directly on the host:
+
 1. Create a top-level "external" symlink:
 
 ```shell
 ln -s bazel-out/../../../external external
 ```
 
-2. Run the `fix_includes.py` tool on the resulting output:
+2. Run the `fix_includes.py` tool:
 
-```shell
-external/iwyu_prebuilt_pkg/bin/fix_includes.py --nosafe_headers < bazel-bin/path/to/pkg/<target>.iwyu.txt
-```
+* **Bzlmod**:
+  ```shell
+  external/bazel_iwyu++iwyu+iwyu_prebuilt_pkg/bin/fix_includes.py --nosafe_headers < bazel-bin/path/to/pkg/<target>.iwyu.txt
+  ```
+* **WORKSPACE (Legacy)**:
+  ```shell
+  external/iwyu_prebuilt_pkg/bin/fix_includes.py --nosafe_headers < bazel-bin/path/to/pkg/<target>.iwyu.txt
+  ```
 
 ---
 
