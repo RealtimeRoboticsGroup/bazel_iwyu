@@ -2,5 +2,15 @@ load("@rules_cc//cc:defs.bzl", "cc_library")
 
 cc_library(
     name = "main",
-    srcs = ["main.cc"],
+    srcs = [
+        "main.cc",
+        "my_header.h",
+        "my_header_custom.h",
+    ],
+)
+
+filegroup(
+    name = "custom_mappings",
+    srcs = ["custom_mappings.imp"],
+    visibility = ["//visibility:public"],
 )

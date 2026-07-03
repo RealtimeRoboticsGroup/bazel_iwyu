@@ -22,16 +22,30 @@ sed -i "s|path = \"../../..\"|path = \"${PARENT_ROOT}\"|g" "${WRITABLE_WORKSPACE
 
 cd "${WRITABLE_WORKSPACE}"
 
-# Run bazel build (expected to exit non-zero due to IWYU violations)
-# We configure --output_user_root, --repository_cache, and --ignore_all_rc_files
-# to ensure it executes hermetically and cleanly inside the write-restricted sandbox.
+# Run bazel build under default mappings (expected to succeed/exit 0 since stddef.h is correct for size_t)
+echo "Running default IWYU build..."
+if ! "${BIT_BAZEL_BINARY}" \
+  --output_user_root="${TEST_TMPDIR}/output_user_root" \
+  --bazelrc=/dev/null \
+  build \
+  --repository_cache="${TEST_TMPDIR}/repository_cache" \
+  --aspects @bazel_iwyu//bazel/iwyu:iwyu.bzl%iwyu_aspect \
+  --output_groups=report //...; then
+  echo "Error: Default IWYU build failed!" >&2
+  exit 1
+fi
+
+# Run custom mappings build (expected to exit non-zero due to mapping violation suggesting stddef_custom.h)
+echo "Running custom mappings IWYU build..."
 "${BIT_BAZEL_BINARY}" \
   --output_user_root="${TEST_TMPDIR}/output_user_root" \
   --bazelrc=/dev/null \
   build \
   --repository_cache="${TEST_TMPDIR}/repository_cache" \
   --aspects @bazel_iwyu//bazel/iwyu:iwyu.bzl%iwyu_aspect \
-  --output_groups=report //... || true
+  --output_groups=report \
+  --@bazel_iwyu//:iwyu_mappings=//:custom_mappings \
+  //... || true
 
 # Check the generated wrapper script path
 WRAPPER_FILE=$(find -L bazel-out -name "*_wrapper.sh" | head -n 1)
@@ -70,6 +84,17 @@ if [[ -z "${IWYU_REPORT}" ]]; then
   exit 1
 fi
 
+echo "IWYU report content:"
+cat "${IWYU_REPORT}"
+
+# Verify that the report suggested my_header_custom.h instead of keeping my_header.h
+if grep -q "my_header_custom.h" "${IWYU_REPORT}"; then
+  echo "Success: Custom mappings were successfully applied in the report."
+else
+  echo "Error: Custom mapping my_header_custom.h was NOT suggested in the report!" >&2
+  exit 1
+fi
+
 echo "Applying IWYU fixes to main.cc..."
 # Run the python script to apply the fixes in place
 python3 "${FIX_INCLUDES_PY}" --noreorder < "${IWYU_REPORT}"
@@ -77,15 +102,21 @@ python3 "${FIX_INCLUDES_PY}" --noreorder < "${IWYU_REPORT}"
 echo "Updated main.cc content:"
 cat main.cc
 
-# Verify that the unused #include <stddef.h> was removed
-if grep -q "stddef.h" main.cc; then
-  echo "Error: fix_includes.py failed to remove #include <stddef.h>!" >&2
+# Verify that the mapped #include "my_header.h" was removed
+if grep -q "my_header.h" main.cc; then
+  echo "Error: fix_includes.py failed to remove #include \"my_header.h\"!" >&2
   exit 1
 fi
 
-echo "Success: Unused include was successfully removed by fix_includes.py."
+# Verify that the custom header was added
+if grep -q "my_header_custom.h" main.cc; then
+  echo "Success: Custom mapped include was successfully added by fix_includes.py."
+else
+  echo "Error: fix_includes.py failed to add #include \"my_header_custom.h\"!" >&2
+  exit 1
+fi
 
-# Rerun the aspect build. Since we fixed the violation, the build should now complete successfully with exit code 0.
+# Rerun the aspect build with custom mappings. Since we fixed the violation, the build should now complete successfully.
 echo "Re-running IWYU build on fixed workspace..."
 if ! "${BIT_BAZEL_BINARY}" \
   --output_user_root="${TEST_TMPDIR}/output_user_root" \
@@ -93,7 +124,9 @@ if ! "${BIT_BAZEL_BINARY}" \
   build \
   --repository_cache="${TEST_TMPDIR}/repository_cache" \
   --aspects @bazel_iwyu//bazel/iwyu:iwyu.bzl%iwyu_aspect \
-  --output_groups=report //...; then
+  --output_groups=report \
+  --@bazel_iwyu//:iwyu_mappings=//:custom_mappings \
+  //...; then
   echo "Error: IWYU build failed after applying the fix!" >&2
   exit 1
 fi

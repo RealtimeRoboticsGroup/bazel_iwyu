@@ -1,0 +1,3 @@
+[
+  { "include": ["\"my_header.h\"", "private", "\"my_header_custom.h\"", "public"] }
+]

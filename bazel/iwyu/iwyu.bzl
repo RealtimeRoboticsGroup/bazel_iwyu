@@ -166,7 +166,6 @@ def _iwyu_aspect_impl(target, ctx):
         OutputGroupInfo(report = depset(direct = outputs)),
     ]
 
-# NOTE(storypku): You may need to perform `bazel clean` if mappings/*.imp were updated.
 iwyu_aspect = aspect(
     implementation = _iwyu_aspect_impl,
     fragments = ["cpp"],

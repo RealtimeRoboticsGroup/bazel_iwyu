@@ -199,10 +199,10 @@
   },
   "selectedYankedVersions": {},
   "moduleExtensions": {
-    "@@bazel_iwyu+//bazel/iwyu:extensions.bzl%iwyu": {
+    "@@bazel_iwyu+//:extensions.bzl%iwyu": {
       "general": {
         "bzlTransitiveDigest": "Pd+KPf4yTHGuS7Mdpxi4daLDlbDe1mbzhXzYH45Ew5o=",
-        "usagesDigest": "ltz6A2j0Rbv6rDmJpk5aDm6sM/mp+ao3cNinp8E2l58=",
+        "usagesDigest": "n3h53T96U11Td52t50fEB2zy7OnJ+pC7Pn9uTSeDVjQ=",
         "recordedInputs": [],
         "generatedRepoSpecs": {
           "iwyu_prebuilt_pkg": {

@@ -20,6 +20,9 @@ bazel_integration_test(
         "test_workspace/BUILD.bazel",
         "test_workspace/MODULE.bazel",
         "test_workspace/main.cc",
+        "test_workspace/my_header.h",
+        "test_workspace/my_header_custom.h",
+        "test_workspace/custom_mappings.imp",
     ] + [
         "//:local_repository_files",
     ],
@@ -36,6 +39,9 @@ bazel_integration_test(
         "test_workspace/BUILD.bazel",
         "test_workspace/MODULE.bazel",
         "test_workspace/main.cc",
+        "test_workspace/my_header.h",
+        "test_workspace/my_header_custom.h",
+        "test_workspace/custom_mappings.imp",
     ] + [
         "//:local_repository_files",
     ],
