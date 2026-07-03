@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       iwyu_version:
-        description: 'IWYU version to build (e.g. 0.25.0)'
+        description: 'IWYU version to build (must start with iwyu-, e.g. iwyu-0.25.0)'
         required: true
       clang_version:
         description: 'Clang version to use (optional, defaults to IWYU minor - 4)'
@@ -63,15 +63,11 @@ jobs:
           IWYU_INPUT_VER: ${{ github.event.inputs.iwyu_version }}
           CLANG_INPUT_VER: ${{ github.event.inputs.clang_version }}
         run: |
-          # Safe mapping of input version
           if [ "$EVENT_NAME" = "release" ]; then
             IWYU_VER="$RELEASE_TAG_NAME"
           else
             IWYU_VER="$IWYU_INPUT_VER"
           fi
-          
-          # Clean version name (strip leading 'iwyu-')
-          IWYU_VER=$(echo "$IWYU_VER" | sed -E 's/^iwyu-//')
           
           ARGS=(--iwyu-version "$IWYU_VER")
           if [ -n "$CLANG_INPUT_VER" ]; then
@@ -112,15 +108,11 @@ jobs:
           IWYU_INPUT_VER: ${{ github.event.inputs.iwyu_version }}
           CLANG_INPUT_VER: ${{ github.event.inputs.clang_version }}
         run: |
-          # Safe mapping of input version
           if [ "$EVENT_NAME" = "release" ]; then
             IWYU_VER="$RELEASE_TAG_NAME"
           else
             IWYU_VER="$IWYU_INPUT_VER"
           fi
-          
-          # Clean version name (strip leading 'iwyu-')
-          IWYU_VER=$(echo "$IWYU_VER" | sed -E 's/^iwyu-//')
           
           ARGS=(--iwyu-version "$IWYU_VER")
           if [ -n "$CLANG_INPUT_VER" ]; then
@@ -161,10 +153,12 @@ jobs:
             TAG_NAME="$RELEASE_TAG_NAME"
           else
             TAG_NAME="$IWYU_INPUT_VER"
-            # Prepend 'iwyu-' if tag doesn't start with it
-            if [[ ! "$TAG_NAME" =~ ^iwyu- ]]; then
-              TAG_NAME="iwyu-$TAG_NAME"
-            fi
+          fi
+          
+          # Enforce that the release tag strictly starts with 'iwyu-'
+          if [[ ! "$TAG_NAME" =~ ^iwyu- ]]; then
+            echo "Error: Tag name '$TAG_NAME' must start with 'iwyu-' prefix (e.g. iwyu-0.25.0)."
+            exit 1
           fi
           
           echo "Targeting release/tag: $TAG_NAME"
