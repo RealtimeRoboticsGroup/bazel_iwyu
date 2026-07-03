@@ -6,7 +6,6 @@ cc_binary(
     name = "archive_example",
     srcs = ["archive_example.cc"],
     deps = [
-        "@boost//:archive",
-        "@boost//:serialization",
+        "@boost.serialization",
     ],
 )

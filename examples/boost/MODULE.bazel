@@ -7,15 +7,4 @@ local_path_override(
     path = "../..",
 )
 
-bazel_dep(name = "rules_boost", version = "0.0.0", repo_name = "com_github_nelhage_rules_boost")
-archive_override(
-    module_name = "rules_boost",
-    strip_prefix = "rules_boost-master",
-    urls = ["https://github.com/nelhage/rules_boost/archive/refs/heads/master.tar.gz"],
-)
-
-non_module_boost_repositories = use_extension("@com_github_nelhage_rules_boost//:boost/repositories.bzl", "non_module_dependencies")
-use_repo(
-    non_module_boost_repositories,
-    "boost",
-)
+bazel_dep(name = "boost.serialization", version = "1.83.0.bcr.1")
