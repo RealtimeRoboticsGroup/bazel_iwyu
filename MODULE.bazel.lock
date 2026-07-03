@@ -300,7 +300,7 @@
   "moduleExtensions": {
     "//:extensions.bzl%iwyu": {
       "general": {
-        "bzlTransitiveDigest": "l0DwmO0Y7o3/Rk1LESn4aZPYlfdcsaJuMxIZlhe0jHo=",
+        "bzlTransitiveDigest": "34srhdazF4192V+7TKNFkwmFV1w8rgYOuXpKac7/9S0=",
         "usagesDigest": "MkZ34Tfg1PCiN31WbE7H+WWmrCaH8dHKVUvIgBBOIlk=",
         "recordedInputs": [],
         "generatedRepoSpecs": {
@@ -310,24 +310,24 @@
               "build_file": "@@//bazel/iwyu:BUILD.prebuilt_pkg",
               "urls": {
                 "linux-aarch64": [
-                  "https://github.com/RealtimeRoboticsGroup/bazel_iwyu/releases/download/iwyu-0.25.1/iwyu-0.25.1-aarch64-linux-gnu.tar.zst"
+                  "https://github.com/RealtimeRoboticsGroup/bazel_iwyu/releases/download/iwyu-0.25.2/iwyu-0.25.2-aarch64-linux-gnu.tar.zst"
                 ],
                 "linux-x86_64": [
-                  "https://github.com/RealtimeRoboticsGroup/bazel_iwyu/releases/download/iwyu-0.25.1/iwyu-0.25.1-x86_64-linux-gnu.tar.zst"
+                  "https://github.com/RealtimeRoboticsGroup/bazel_iwyu/releases/download/iwyu-0.25.2/iwyu-0.25.2-x86_64-linux-gnu.tar.zst"
                 ],
                 "macos-arm64": [
-                  "https://github.com/RealtimeRoboticsGroup/bazel_iwyu/releases/download/iwyu-0.25.1/iwyu-0.25.1-arm64-apple-darwin.tar.zst"
+                  "https://github.com/RealtimeRoboticsGroup/bazel_iwyu/releases/download/iwyu-0.25.2/iwyu-0.25.2-arm64-apple-darwin.tar.zst"
                 ]
               },
               "sha256": {
-                "linux-aarch64": "b592d4a2802478476747f519f915c0cbc883d3b89522f179357a7b3f26655ff0",
-                "linux-x86_64": "624d11a42ee84ebe2c4d68f099f3733354b6ef4fbfa88542a127dec6d870cc33",
-                "macos-arm64": "0ee6756d992240e7679111d7a8e18df33f18f416bb04b727c83cbfb11ff989d1"
+                "linux-aarch64": "4d028ac44c30b9f2c4ce740d88b5570a436073f4839a14c5f35fcaa6ebfe22b2",
+                "linux-x86_64": "0569d32def899c931280c44a7f2ea856030c6a41a4ac71c598297211ee0a40c8",
+                "macos-arm64": "ff0e3d7228155e8684cf9b213701c310448981133160501bdd21955133497b6a"
               },
               "strip_prefix": {
-                "linux-aarch64": "iwyu-0.25.1-aarch64-linux-gnu",
-                "linux-x86_64": "iwyu-0.25.1-x86_64-linux-gnu",
-                "macos-arm64": "iwyu-0.25.1-arm64-apple-darwin"
+                "linux-aarch64": "iwyu-0.25.2-aarch64-linux-gnu",
+                "linux-x86_64": "iwyu-0.25.2-x86_64-linux-gnu",
+                "macos-arm64": "iwyu-0.25.2-arm64-apple-darwin"
               }
             }
           }
