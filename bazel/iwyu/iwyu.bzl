@@ -18,8 +18,36 @@ def _is_cpp_target(srcs):
         return True  # assume header-only lib in C++
     return any([src.extension in _CPP_EXTENSIONS for src in srcs])
 
-def _is_cuda_target(srcs):
-    return any([src.extension in _CUDA_EXTENSIONS for src in srcs])
+def _is_cuda_target(ctx, srcs, all_flags):
+    # 1. Check file extensions (.cu, .cuh)
+    if any([src.extension in _CUDA_EXTENSIONS for src in srcs]):
+        return True
+
+    # 2. Check rule kind (e.g. cuda_library, cuda_binary)
+    kind = ctx.rule.kind.lower()
+    if "cuda" in kind:
+        return True
+
+    # 3. Check compile flags (copts, toolchain flags, rule flags)
+    for flag in all_flags:
+        flag_lower = flag.lower()
+
+        # Clang CUDA configuration flags:
+        # - '--cuda-gpu-arch' (e.g., sm_75, sm_86) specifies GPU virtual arch
+        # - '--cuda-path' specifies the path to the CUDA toolkit
+        # - '-fcuda-rdc' enables relocatable device code compilation
+        if "--cuda-" in flag_lower or "-fcuda-" in flag_lower:
+            return True
+
+    # Check for language override flags. E.g. '-x cuda' or '-x cu' tell the compiler
+    # to compile standard files (like .cc) as CUDA code.
+    for i in range(len(all_flags)):
+        if all_flags[i] == "-x" and i + 1 < len(all_flags):
+            val = all_flags[i + 1].lower()
+            if val == "cuda" or val == "cu":
+                return True
+
+    return False
 
 def _run_iwyu(ctx, iwyu_executable, iwyu_runfiles, iwyu_mappings, iwyu_options, flags, target, infile, cc_toolchain):
     compilation_context = target[CcInfo].compilation_context
@@ -136,9 +164,7 @@ def _iwyu_aspect_impl(target, ctx):
         return []
 
     srcs = _rule_sources(ctx)
-
-    # Ref: https://github.com/include-what-you-use/include-what-you-use/issues/950
-    if len(srcs) == 0 or _is_cuda_target(srcs):
+    if len(srcs) == 0:
         return []
 
     cc_toolchain = find_cpp_toolchain(ctx)
@@ -164,6 +190,10 @@ def _iwyu_aspect_impl(target, ctx):
         rule_flags.extend(ctx.rule.attr.copts)
 
     all_flags = _safe_flags(toolchain_flags + rule_flags)
+
+    # Ref: https://github.com/include-what-you-use/include-what-you-use/issues/950
+    if _is_cuda_target(ctx, srcs, all_flags):
+        return []
 
     outputs = [
         _run_iwyu(ctx, iwyu_executable, iwyu_runfiles, iwyu_mappings, iwyu_options, all_flags, target, src, cc_toolchain)

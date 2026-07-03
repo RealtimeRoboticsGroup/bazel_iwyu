@@ -4,7 +4,7 @@ set -euo pipefail
 # Resolve sandbox and setup writable workspace
 readonly WRITABLE_WORKSPACE="${TEST_TMPDIR}/writable_workspace"
 mkdir -p "${WRITABLE_WORKSPACE}"
-cp -RL "${BIT_WORKSPACE_DIR}"/* "${WRITABLE_WORKSPACE}/"
+cp -RL "${BIT_WORKSPACE_DIR}"/. "${WRITABLE_WORKSPACE}/"
 chmod -R +w "${WRITABLE_WORKSPACE}"
 
 PARENT_ROOT=$(realpath "${BIT_WORKSPACE_DIR}/../../..")
@@ -20,6 +20,16 @@ echo "Running IWYU build..."
   --repository_cache="${TEST_TMPDIR}/repository_cache" \
   --aspects @bazel_iwyu//bazel/iwyu:iwyu.bzl%iwyu_aspect \
   --output_groups=report //... || true
+
+# Verify that the CUDA targets were successfully skipped and no reports were generated
+CUDA_SIM_REPORTS=$(find -L bazel-out -name "*cuda_sim*.iwyu.txt")
+if [[ -n "${CUDA_SIM_REPORTS}" ]]; then
+  echo "Error: CUDA targets were not skipped! Found reports:" >&2
+  echo "${CUDA_SIM_REPORTS}" >&2
+  exit 1
+else
+  echo "Success: CUDA targets were successfully skipped."
+fi
 
 WRAPPER_FILE=$(find -L bazel-out -name "*_wrapper.sh" | head -n 1)
 if [[ -z "${WRAPPER_FILE}" ]]; then
