@@ -99,4 +99,3 @@ if ! "${BIT_BAZEL_BINARY}" \
 fi
 
 echo "Success: IWYU build completed successfully with 0 violations after applying the fix."
-

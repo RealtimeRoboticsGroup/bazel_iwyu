@@ -457,7 +457,7 @@
     "@@rules_bazel_integration_test+//:extensions.bzl%bazel_binaries": {
       "general": {
         "bzlTransitiveDigest": "XC9nqZ31LIbq8N7cEK+rYa2iXNQLcJ3cyGWw+zPZlc0=",
-        "usagesDigest": "cr+UkcWwK9S4Omf+AOTGl0J5jVzbPkN7ngPPxJUa5Z0=",
+        "usagesDigest": "Cl0uzUes8M+SlDQQC8tDp8XoTFWygMCbWuLTx0w+bT0=",
         "recordedInputs": [
           "REPO_MAPPING:rules_bazel_integration_test+,bazel_skylib bazel_skylib+",
           "REPO_MAPPING:rules_bazel_integration_test+,cgrindel_bazel_starlib cgrindel_bazel_starlib+"
@@ -476,11 +476,19 @@
               "bazelisk": "@bazel_binaries_bazelisk//:bazelisk"
             }
           },
+          "build_bazel_bazel_9_0_0": {
+            "repoRuleId": "@@rules_bazel_integration_test+//bazel_integration_test/private:bazel_binaries.bzl%bazel_binary",
+            "attributes": {
+              "version": "9.0.0",
+              "bazelisk": "@bazel_binaries_bazelisk//:bazelisk"
+            }
+          },
           "bazel_binaries": {
             "repoRuleId": "@@rules_bazel_integration_test+//bazel_integration_test/bzlmod:bazel_binaries.bzl%_bazel_binaries_helper",
             "attributes": {
               "version_to_repo": {
-                "8.0.0": "build_bazel_bazel_8_0_0"
+                "8.0.0": "build_bazel_bazel_8_0_0",
+                "9.0.0": "build_bazel_bazel_9_0_0"
               },
               "current_version": "8.0.0"
             }
@@ -491,6 +499,7 @@
           "explicitRootModuleDirectDevDeps": [
             "bazel_binaries_bazelisk",
             "build_bazel_bazel_8_0_0",
+            "build_bazel_bazel_9_0_0",
             "bazel_binaries"
           ],
           "useAllRepos": "NO",
