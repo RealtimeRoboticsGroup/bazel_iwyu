@@ -85,17 +85,9 @@ jobs:
           retention-days: 1
 
   build-macos:
-    name: Build macOS ${{ matrix.arch }}
+    name: Build macOS arm64
     if: github.event_name == 'workflow_dispatch' || startsWith(github.event.release.tag_name, 'iwyu-')
-    runs-on: ${{ matrix.runner }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - arch: x86_64
-            runner: macos-13
-          - arch: arm64
-            runner: macos-14
+    runs-on: macos-14
 
     steps:
       - name: Checkout repository
@@ -124,7 +116,7 @@ jobs:
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v7
         with:
-          name: iwyu-binaries-macos-${{ matrix.arch }}
+          name: iwyu-binaries-macos-arm64
           path: iwyu-*.tar.zst
           if-no-files-found: error
           retention-days: 1
