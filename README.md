@@ -44,9 +44,11 @@ bazel_dep(name = "bazel_iwyu", version = "<version>")
 1. Add the following to your `.bazelrc`:
 
 ```ini
-build:iwyu --aspects @bazel_iwyu//bazel/iwyu:iwyu.bzl%iwyu_aspect
+build:iwyu --aspects @bazel_iwyu//:iwyu.bzl%iwyu_aspect
 build:iwyu --output_groups=report
 ```
+
+*(Note: The legacy path `@bazel_iwyu//bazel/iwyu:iwyu.bzl%iwyu_aspect` remains fully supported for backward compatibility.)*
 
 2. **Custom Mappings**: If you would like to use your own IWYU mappings, put all your `.imp` files in a directory, say, `bazel/iwyu/mappings`, and create a `filegroup` target for it:
 

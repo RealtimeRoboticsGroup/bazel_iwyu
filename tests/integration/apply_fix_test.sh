@@ -24,7 +24,7 @@ echo "Running initial build (should find unused include)..."
   --bazelrc=/dev/null \
   build \
   --repository_cache="${TEST_TMPDIR}/repository_cache" \
-  --aspects @bazel_iwyu//bazel/iwyu:iwyu.bzl%iwyu_aspect \
+  --aspects @bazel_iwyu//:iwyu.bzl%iwyu_aspect \
   --output_groups=report //... || true
 
 FIX_INCLUDES_PY=$(find "${TEST_TMPDIR}/output_user_root" -name "fix_includes.py" | head -n 1)
@@ -56,7 +56,7 @@ if ! "${BIT_BAZEL_BINARY}" \
   --bazelrc=/dev/null \
   build \
   --repository_cache="${TEST_TMPDIR}/repository_cache" \
-  --aspects @bazel_iwyu//bazel/iwyu:iwyu.bzl%iwyu_aspect \
+  --aspects @bazel_iwyu//:iwyu.bzl%iwyu_aspect \
   --output_groups=report //...; then
   echo "Error: Build failed after applying fixes!" >&2
   exit 1
