@@ -1,0 +1,45 @@
+module(name = "iwyu_for_x_compil_demo")
+
+bazel_dep(name = "rules_cc", version = "0.2.17")
+bazel_dep(name = "platforms", version = "1.1.0")
+bazel_dep(name = "rules_cuda", version = "0.3.0")
+bazel_dep(name = "bazel_iwyu")
+local_path_override(
+    module_name = "bazel_iwyu",
+    path = "../..",
+)
+
+bazel_dep(name = "toolchains_llvm", version = "1.8.0")
+
+# Setup sysroots
+sysroot_ext = use_extension("//bazel:extensions.bzl", "sysroot_extension")
+use_repo(sysroot_ext, "chromium_sysroot_linux_aarch64")
+
+# Configure LLVM toolchains
+llvm = use_extension("@toolchains_llvm//toolchain/extensions:llvm.bzl", "llvm")
+
+llvm.toolchain(
+    name = "llvm_toolchain",
+    llvm_version = "17.0.6",
+    stdlib = {
+        "": "stdc++",
+    },
+)
+
+llvm.toolchain(
+    name = "j5_cross_toolchain",
+    llvm_version = "17.0.6",
+)
+
+llvm.sysroot(
+    name = "j5_cross_toolchain",
+    label = "@chromium_sysroot_linux_aarch64//:sysroot",
+    targets = ["linux-aarch64"],
+)
+
+use_repo(llvm, "llvm_toolchain", "j5_cross_toolchain")
+
+register_toolchains(
+    "@llvm_toolchain//:all",
+    "@j5_cross_toolchain//:all",
+)
