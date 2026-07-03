@@ -5,5 +5,5 @@ bazel_dep(name = "googletest", version = "1.17.0.bcr.2")
 bazel_dep(name = "bazel_iwyu")
 local_path_override(
     module_name = "bazel_iwyu",
-    path = "../..",
+    path = "../../..",
 )

@@ -14,6 +14,41 @@ WORKSPACE_FILES = [
     "//:local_repository_files",
 ]
 
+BOOST_WORKSPACE_FILES = [
+    "boost/BUILD.bazel",
+    "boost/MODULE.bazel",
+    "boost/MODULE.bazel.lock",
+    "boost/archive_example.cc",
+] + [
+    "//:local_repository_files",
+]
+
+GTEST_WORKSPACE_FILES = [
+    "gtest/BUILD.bazel",
+    "gtest/MODULE.bazel",
+    "gtest/MODULE.bazel.lock",
+    "gtest/sample2.cc",
+    "gtest/sample2.h",
+    "gtest/sample2_test.cc",
+] + [
+    "//:local_repository_files",
+]
+
+CROSS_COMPILATION_WORKSPACE_FILES = [
+    "cross_compilation/.bazelrc",
+    "cross_compilation/BUILD",
+    "cross_compilation/MODULE.bazel",
+    "cross_compilation/MODULE.bazel.lock",
+    "cross_compilation/chromium_sysroot.BUILD",
+    "cross_compilation/base/BUILD",
+    "cross_compilation/base/atomic_test.cc",
+    "cross_compilation/base/math_demo.cc",
+    "cross_compilation/bazel/BUILD",
+    "cross_compilation/bazel/soctype/BUILD",
+] + [
+    "//:local_repository_files",
+]
+
 # Run files/runners for each test
 sh_binary(
     name = "version_selection_test_runner",
@@ -50,6 +85,30 @@ sh_binary(
 sh_binary(
     name = "iwyu_opts_test_runner",
     srcs = ["iwyu_opts_test.sh"],
+    data = [
+        "@bazel_tools//tools/bash/runfiles",
+    ],
+)
+
+sh_binary(
+    name = "boost_test_runner",
+    srcs = ["boost_test.sh"],
+    data = [
+        "@bazel_tools//tools/bash/runfiles",
+    ],
+)
+
+sh_binary(
+    name = "gtest_test_runner",
+    srcs = ["gtest_test.sh"],
+    data = [
+        "@bazel_tools//tools/bash/runfiles",
+    ],
+)
+
+sh_binary(
+    name = "cross_compilation_test_runner",
+    srcs = ["cross_compilation_test.sh"],
     data = [
         "@bazel_tools//tools/bash/runfiles",
     ],
@@ -158,4 +217,67 @@ bazel_integration_test(
     test_runner = ":iwyu_opts_test_runner",
     workspace_files = WORKSPACE_FILES,
     workspace_path = "test_workspace",
+)
+
+# 6. Relocated Boost Example Integration Tests
+bazel_integration_test(
+    name = "boost_integration_test_8",
+    bazel_binaries = bazel_binaries,
+    bazel_version = "8.0.0",
+    tags = [],
+    test_runner = ":boost_test_runner",
+    workspace_files = BOOST_WORKSPACE_FILES,
+    workspace_path = "boost",
+)
+
+bazel_integration_test(
+    name = "boost_integration_test_9",
+    bazel_binaries = bazel_binaries,
+    bazel_version = "9.0.0",
+    tags = [],
+    test_runner = ":boost_test_runner",
+    workspace_files = BOOST_WORKSPACE_FILES,
+    workspace_path = "boost",
+)
+
+# 7. Relocated GTest Example Integration Tests
+bazel_integration_test(
+    name = "gtest_integration_test_8",
+    bazel_binaries = bazel_binaries,
+    bazel_version = "8.0.0",
+    tags = [],
+    test_runner = ":gtest_test_runner",
+    workspace_files = GTEST_WORKSPACE_FILES,
+    workspace_path = "gtest",
+)
+
+bazel_integration_test(
+    name = "gtest_integration_test_9",
+    bazel_binaries = bazel_binaries,
+    bazel_version = "9.0.0",
+    tags = [],
+    test_runner = ":gtest_test_runner",
+    workspace_files = GTEST_WORKSPACE_FILES,
+    workspace_path = "gtest",
+)
+
+# 8. Relocated Cross Compilation Example Integration Tests
+bazel_integration_test(
+    name = "cross_compilation_integration_test_8",
+    bazel_binaries = bazel_binaries,
+    bazel_version = "8.0.0",
+    tags = ["requires-network"],
+    test_runner = ":cross_compilation_test_runner",
+    workspace_files = CROSS_COMPILATION_WORKSPACE_FILES,
+    workspace_path = "cross_compilation",
+)
+
+bazel_integration_test(
+    name = "cross_compilation_integration_test_9",
+    bazel_binaries = bazel_binaries,
+    bazel_version = "9.0.0",
+    tags = ["requires-network"],
+    test_runner = ":cross_compilation_test_runner",
+    workspace_files = CROSS_COMPILATION_WORKSPACE_FILES,
+    workspace_path = "cross_compilation",
 )

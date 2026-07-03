@@ -36,18 +36,8 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: bazel run //tools:format.check
 
-      - name: Build Root Workspace
-        run: bazel build //...
-
-      - name: Test GTest Example
-        run: |
-          cd examples/gtest
-          bazel test //...
-
-      - name: Build Boost Example
-        run: |
-          cd examples/boost
-          bazel build //...
+      - name: Test Root Workspace
+        run: bazel test //...
 
   test-debian:
     name: Build & Test (Debian Trixie)
@@ -87,15 +77,5 @@ jobs:
           disk-cache: ${{ github.workflow }}
           repository-cache: true
 
-      - name: Build Root Workspace
-        run: bazel --batch build //...
-
-      - name: Test GTest Example
-        run: |
-          cd examples/gtest
-          bazel --batch test //...
-
-      - name: Build Boost Example
-        run: |
-          cd examples/boost
-          bazel --batch build //...
+      - name: Test Root Workspace
+        run: bazel --batch test //...
