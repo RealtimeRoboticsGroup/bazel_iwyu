@@ -218,27 +218,6 @@
   },
   "selectedYankedVersions": {},
   "moduleExtensions": {
-    "//bazel:extensions.bzl%sysroot_extension": {
-      "general": {
-        "bzlTransitiveDigest": "9jiUh/ya281PW4KlE4H+WbbUbA8c3p2j2clVz5z4Sds=",
-        "usagesDigest": "UB2jhnZ5v7sPlL3CjSbxgFJsx4HIUALFcJyIzDe7LKs=",
-        "recordedInputs": [
-          "REPO_MAPPING:,bazel_tools bazel_tools"
-        ],
-        "generatedRepoSpecs": {
-          "chromium_sysroot_linux_aarch64": {
-            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
-            "attributes": {
-              "build_file": "@@//:chromium_sysroot.BUILD",
-              "sha256": "2e3a344f48da76b6532f3de86759f94359292143ccaf6094814e09441a36629f",
-              "urls": [
-                "https://commondatastorage.googleapis.com/chrome-linux-sysroot/toolchain/0e28d9832614729bb5b731161ff96cb4d516f345/debian_bullseye_arm64_sysroot.tar.xz"
-              ]
-            }
-          }
-        }
-      }
-    },
     "@@rules_cuda+//cuda:extensions.bzl%toolchain": {
       "general": {
         "bzlTransitiveDigest": "KvlM8RQ+m1CHcDiikj56s8spV/6NwiJDypZXgD04dZA=",
