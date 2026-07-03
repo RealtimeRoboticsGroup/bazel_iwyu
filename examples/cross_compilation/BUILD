@@ -25,4 +25,3 @@ platform(
     ],
     parents = [":aarch64_platform"],
 )
-

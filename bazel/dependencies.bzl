@@ -1,6 +1,6 @@
+load("@bazel_iwyu//bazel:prebuilt_pkg.bzl", "prebuilt_pkg")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
-load("@bazel_iwyu//bazel:prebuilt_pkg.bzl", "prebuilt_pkg")
 
 def bazel_iwyu_dependencies():
     maybe(
@@ -21,7 +21,7 @@ def bazel_iwyu_dependencies():
         },
         sha256 = {
             "linux-aarch64": "302db27d867a6d406cc63bdc0b9e23944760654aee550671c9ea527bfdca9032",
-            "linux-x86_64":  "684e3e7193d6a8ee77ed485c0378f64e8c13f8a30c0709545d13c8c1655811c5",
+            "linux-x86_64": "684e3e7193d6a8ee77ed485c0378f64e8c13f8a30c0709545d13c8c1655811c5",
         },
     )
 

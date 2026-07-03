@@ -8,7 +8,6 @@ load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain")
 load("@rules_cc//cc/common:cc_common.bzl", "cc_common")
 load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
 
-
 _CPP_HEADER_EXTENSIONS = ["hh", "hxx", "ipp", "hpp"]
 _C_OR_CPP_HEADER_EXTENSIONS = ["h"] + _CPP_HEADER_EXTENSIONS
 _CPP_EXTENSIONS = ["cc", "cpp", "cxx"] + _CPP_HEADER_EXTENSIONS
