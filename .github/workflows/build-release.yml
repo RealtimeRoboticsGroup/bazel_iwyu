@@ -70,8 +70,8 @@ jobs:
             IWYU_VER="$IWYU_INPUT_VER"
           fi
           
-          # Clean version name (strip leading 'v' or 'iwyu-')
-          IWYU_VER=$(echo "$IWYU_VER" | sed -E 's/^(v|iwyu-)//')
+          # Clean version name (strip leading 'iwyu-')
+          IWYU_VER=$(echo "$IWYU_VER" | sed -E 's/^iwyu-//')
           
           ARGS=(--iwyu-version "$IWYU_VER")
           if [ -n "$CLANG_INPUT_VER" ]; then
@@ -119,8 +119,8 @@ jobs:
             IWYU_VER="$IWYU_INPUT_VER"
           fi
           
-          # Clean version name (strip leading 'v' or 'iwyu-')
-          IWYU_VER=$(echo "$IWYU_VER" | sed -E 's/^(v|iwyu-)//')
+          # Clean version name (strip leading 'iwyu-')
+          IWYU_VER=$(echo "$IWYU_VER" | sed -E 's/^iwyu-//')
           
           ARGS=(--iwyu-version "$IWYU_VER")
           if [ -n "$CLANG_INPUT_VER" ]; then

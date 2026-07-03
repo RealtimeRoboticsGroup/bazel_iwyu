@@ -40,10 +40,11 @@ def parse_args():
     return parser.parse_args()
 
 def get_iwyu_versions(version_str):
+    if version_str.startswith("v"):
+        sys.exit(f"Error: Version '{version_str}' cannot start with a leading 'v'. Please use raw version format (e.g. 0.25.0) or 'iwyu-' prefix (e.g. iwyu-0.25.0).")
+        
     iwyu_version = version_str
-    if iwyu_version.startswith("v"):
-        iwyu_version = iwyu_version[1:]
-    elif iwyu_version.startswith("iwyu-"):
+    if iwyu_version.startswith("iwyu-"):
         iwyu_version = iwyu_version[5:]
     # Parse major/minor/patch
     parts = iwyu_version.split(".")
