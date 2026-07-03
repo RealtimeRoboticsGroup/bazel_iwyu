@@ -89,12 +89,18 @@ def _run_iwyu(ctx, iwyu_executable, iwyu_runfiles, iwyu_mappings, iwyu_options, 
     # add source to check
     args.add(infile)
 
+    # Stage the C++ toolchain files. This pulls compiler-internal headers (such as
+    # redacted_dates.h) and standard library headers into the sandbox, ensuring
+    # hermetic execution under sandboxed toolchains (like cross-compilation).
     inputs = depset(
         direct = [infile] + iwyu_mappings,
         transitive = [compilation_context.headers, iwyu_runfiles, cc_toolchain.all_files],
     )
 
-    # https://github.com/bazelbuild/bazel/issues/5511
+    # Run the compiled aspect action. IWYU prints its diagnostic reports directly to
+    # stderr. Because Bazel's ctx.actions.run does not support native stdout/stderr
+    # redirection to a file (see https://github.com/bazelbuild/bazel/issues/5511),
+    # we execute a wrapper script that redirects stderr to the declared output file.
     ctx.actions.run(
         inputs = inputs,
         outputs = [outfile],
