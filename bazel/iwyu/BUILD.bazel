@@ -1,7 +1,17 @@
 load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
+load("//bazel/iwyu:toolchain.bzl", "iwyu_toolchain")
 
 package(default_visibility = ["//visibility:public"])
 
+exports_files([
+    "BUILD.bazel",
+    "BUILD.prebuilt_pkg",
+    "iwyu.bzl",
+    "toolchain.bzl",
+    "versions.bzl",
+])
+
+# Legacy target maintained for backwards compatibility
 sh_binary(
     name = "run_iwyu",
     srcs = ["run_iwyu.sh"],
@@ -10,4 +20,19 @@ sh_binary(
         "@iwyu_prebuilt_pkg//:include",
     ],
     deps = ["@bazel_tools//tools/bash/runfiles"],
+)
+
+# New toolchain framework
+toolchain_type(name = "toolchain_type")
+
+iwyu_toolchain(
+    name = "iwyu_prebuilt_toolchain_impl",
+    iwyu_tool = "@iwyu_prebuilt_pkg//:bin/include-what-you-use",
+    data = ["@iwyu_prebuilt_pkg//:include"],
+)
+
+toolchain(
+    name = "iwyu_prebuilt_toolchain",
+    toolchain = ":iwyu_prebuilt_toolchain_impl",
+    toolchain_type = ":toolchain_type",
 )

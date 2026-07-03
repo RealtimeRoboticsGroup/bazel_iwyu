@@ -21,7 +21,7 @@ def _is_cpp_target(srcs):
 def _is_cuda_target(srcs):
     return any([src.extension in _CUDA_EXTENSIONS for src in srcs])
 
-def _run_iwyu(ctx, iwyu_executable, iwyu_mappings, iwyu_options, flags, target, infile):
+def _run_iwyu(ctx, iwyu_executable, iwyu_runfiles, iwyu_mappings, iwyu_options, flags, target, infile):
     compilation_context = target[CcInfo].compilation_context
     outfile = ctx.actions.declare_file(
         "{}.{}.iwyu.txt".format(target.label.name, infile.basename),
@@ -63,7 +63,7 @@ def _run_iwyu(ctx, iwyu_executable, iwyu_mappings, iwyu_options, flags, target, 
 
     inputs = depset(
         direct = [infile] + iwyu_mappings,
-        transitive = [compilation_context.headers],
+        transitive = [compilation_context.headers, iwyu_runfiles],
     )
 
     # https://github.com/bazelbuild/bazel/issues/5511
@@ -146,7 +146,12 @@ def _iwyu_aspect_impl(target, ctx):
     if len(srcs) == 0 or _is_cuda_target(srcs):
         return []
 
-    iwyu_executable = ctx.attr._iwyu_executable.files_to_run
+    iwyu_toolchain = ctx.toolchains["@bazel_iwyu//bazel/iwyu:toolchain_type"]
+    iwyu_executable = iwyu_toolchain.iwyu_info.iwyu_executable
+    iwyu_runfiles = iwyu_toolchain.iwyu_info.iwyu_runfiles
+
+
+
     iwyu_mappings = ctx.attr._iwyu_mappings.files.to_list()
     iwyu_options = ctx.attr._iwyu_opts[BuildSettingInfo].value
 
@@ -160,7 +165,7 @@ def _iwyu_aspect_impl(target, ctx):
     all_flags = _safe_flags(toolchain_flags + rule_flags)
 
     outputs = [
-        _run_iwyu(ctx, iwyu_executable, iwyu_mappings, iwyu_options, all_flags, target, src)
+        _run_iwyu(ctx, iwyu_executable, iwyu_runfiles, iwyu_mappings, iwyu_options, all_flags, target, src)
         for src in srcs
     ]
     return [
@@ -175,9 +180,11 @@ iwyu_aspect = aspect(
         "_cc_toolchain": attr.label(
             default = Label("@bazel_tools//tools/cpp:current_cc_toolchain"),
         ),
-        "_iwyu_executable": attr.label(default = Label("//bazel/iwyu:run_iwyu")),
         "_iwyu_mappings": attr.label(default = Label("//:iwyu_mappings")),
         "_iwyu_opts": attr.label(default = Label("//:iwyu_opts")),
     },
-    toolchains = ["@bazel_tools//tools/cpp:toolchain_type"],
+    toolchains = [
+        "@bazel_tools//tools/cpp:toolchain_type",
+        "@bazel_iwyu//bazel/iwyu:toolchain_type",
+    ],
 )
