@@ -115,7 +115,7 @@ sh_binary(
     ],
 )
 
-# 1. Version Selection Tests
+# 1. Version Selection Tests (Executed for both Bazel 8 and 9)
 bazel_integration_test(
     name = "version_selection_test_8",
     bazel_binaries = bazel_binaries,
@@ -138,17 +138,7 @@ bazel_integration_test(
 
 # 2. Apply Fix Tests
 bazel_integration_test(
-    name = "apply_fix_test_8",
-    bazel_binaries = bazel_binaries,
-    bazel_version = "8.0.0",
-    tags = [],
-    test_runner = ":apply_fix_test_runner",
-    workspace_files = WORKSPACE_FILES,
-    workspace_path = "test_workspace",
-)
-
-bazel_integration_test(
-    name = "apply_fix_test_9",
+    name = "apply_fix_test",
     bazel_binaries = bazel_binaries,
     bazel_version = "9.0.0",
     tags = [],
@@ -159,17 +149,7 @@ bazel_integration_test(
 
 # 3. Custom Mappings Tests
 bazel_integration_test(
-    name = "custom_mappings_test_8",
-    bazel_binaries = bazel_binaries,
-    bazel_version = "8.0.0",
-    tags = [],
-    test_runner = ":custom_mappings_test_runner",
-    workspace_files = WORKSPACE_FILES,
-    workspace_path = "test_workspace",
-)
-
-bazel_integration_test(
-    name = "custom_mappings_test_9",
+    name = "custom_mappings_test",
     bazel_binaries = bazel_binaries,
     bazel_version = "9.0.0",
     tags = [],
@@ -180,17 +160,7 @@ bazel_integration_test(
 
 # 4. Mapping Flag Error Validation Tests
 bazel_integration_test(
-    name = "mapping_flag_error_test_8",
-    bazel_binaries = bazel_binaries,
-    bazel_version = "8.0.0",
-    tags = [],
-    test_runner = ":mapping_flag_error_test_runner",
-    workspace_files = WORKSPACE_FILES,
-    workspace_path = "test_workspace",
-)
-
-bazel_integration_test(
-    name = "mapping_flag_error_test_9",
+    name = "mapping_flag_error_test",
     bazel_binaries = bazel_binaries,
     bazel_version = "9.0.0",
     tags = [],
@@ -201,17 +171,7 @@ bazel_integration_test(
 
 # 5. Positive Custom Options (iwyu_opts) Tests
 bazel_integration_test(
-    name = "iwyu_opts_test_8",
-    bazel_binaries = bazel_binaries,
-    bazel_version = "8.0.0",
-    tags = [],
-    test_runner = ":iwyu_opts_test_runner",
-    workspace_files = WORKSPACE_FILES,
-    workspace_path = "test_workspace",
-)
-
-bazel_integration_test(
-    name = "iwyu_opts_test_9",
+    name = "iwyu_opts_test",
     bazel_binaries = bazel_binaries,
     bazel_version = "9.0.0",
     tags = [],
@@ -222,17 +182,7 @@ bazel_integration_test(
 
 # 6. Relocated Boost Example Integration Tests
 bazel_integration_test(
-    name = "boost_integration_test_8",
-    bazel_binaries = bazel_binaries,
-    bazel_version = "8.0.0",
-    tags = [],
-    test_runner = ":boost_test_runner",
-    workspace_files = BOOST_WORKSPACE_FILES,
-    workspace_path = "boost",
-)
-
-bazel_integration_test(
-    name = "boost_integration_test_9",
+    name = "boost_integration_test",
     bazel_binaries = bazel_binaries,
     bazel_version = "9.0.0",
     tags = [],
@@ -243,17 +193,7 @@ bazel_integration_test(
 
 # 7. Relocated GTest Example Integration Tests
 bazel_integration_test(
-    name = "gtest_integration_test_8",
-    bazel_binaries = bazel_binaries,
-    bazel_version = "8.0.0",
-    tags = [],
-    test_runner = ":gtest_test_runner",
-    workspace_files = GTEST_WORKSPACE_FILES,
-    workspace_path = "gtest",
-)
-
-bazel_integration_test(
-    name = "gtest_integration_test_9",
+    name = "gtest_integration_test",
     bazel_binaries = bazel_binaries,
     bazel_version = "9.0.0",
     tags = [],
@@ -264,17 +204,7 @@ bazel_integration_test(
 
 # 8. Relocated Cross Compilation Example Integration Tests
 bazel_integration_test(
-    name = "cross_compilation_integration_test_8",
-    bazel_binaries = bazel_binaries,
-    bazel_version = "8.0.0",
-    tags = ["requires-network"],
-    test_runner = ":cross_compilation_test_runner",
-    workspace_files = CROSS_COMPILATION_WORKSPACE_FILES,
-    workspace_path = "cross_compilation",
-)
-
-bazel_integration_test(
-    name = "cross_compilation_integration_test_9",
+    name = "cross_compilation_integration_test",
     bazel_binaries = bazel_binaries,
     bazel_version = "9.0.0",
     tags = ["requires-network"],

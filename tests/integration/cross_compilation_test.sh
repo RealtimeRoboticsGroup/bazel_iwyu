@@ -11,7 +11,7 @@ fi
 chmod -R +w "${WRITABLE_WORKSPACE}"
 
 PARENT_ROOT=$(realpath "${BIT_WORKSPACE_DIR}/../../..")
-sed -i "s|path = \"../../..\"|path = \"${PARENT_ROOT}\"|g" "${WRITABLE_WORKSPACE}/MODULE.bazel"
+sed "s|path = \"../../..\"|path = \"${PARENT_ROOT}\"|g" "${WRITABLE_WORKSPACE}/MODULE.bazel" > "${WRITABLE_WORKSPACE}/MODULE.bazel.tmp" && mv "${WRITABLE_WORKSPACE}/MODULE.bazel.tmp" "${WRITABLE_WORKSPACE}/MODULE.bazel"
 
 cd "${WRITABLE_WORKSPACE}"
 
