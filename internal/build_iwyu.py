@@ -63,12 +63,12 @@ def get_llvm_download_info(clang_major, arch):
             os_suffix = "-ubuntu-18.04"
         else:
             os_suffix = "-ubuntu-22.04"
-        filename = f"clang+llvm-{version}-x86_64-linux-gnu{os_suffix}.tar.xz"
+        filename = f"clang+llvm-{version}-x86_64-linux-gnu{os_suffix}.tar.zst"
     else:
-        # aarch64 has no OS suffix in official LLVM releases.
-        filename = f"clang+llvm-{version}-aarch64-linux-gnu.tar.xz"
+        # aarch64 has no OS suffix in the toolchain repository.
+        filename = f"clang+llvm-{version}-aarch64-linux-gnu.tar.zst"
         
-    url = f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{version}/{filename}"
+    url = f"https://github.com/RealtimeRoboticsGroup/toolchains/releases/download/{version}/{filename}"
     return filename, url
 
 def download_file(url, dest_path):
@@ -154,7 +154,7 @@ def main():
                 
             print("Extracting LLVM...")
             subprocess.run(
-                ["tar", "xJf", llvm_tar, "--strip-components=1", "-C", llvm_dir],
+                ["tar", "-xf", llvm_tar, "--strip-components=1", "-C", llvm_dir],
                 check=True
             )
         

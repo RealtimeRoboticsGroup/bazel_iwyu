@@ -39,7 +39,7 @@ python3 internal/build_iwyu.py --iwyu-version 0.25.0 --clang-version 21
 ```
 
 The script will:
-1. Search GitHub LLVM releases to download the appropriate pre-compiled LLVM compiler to `/tmp` (on Linux) or install it via Homebrew (on macOS).
+1. Download the appropriate pre-compiled LLVM compiler in `.tar.zst` format from `RealtimeRoboticsGroup/toolchains` releases to `/tmp` (on Linux) or install it via Homebrew (on macOS).
 2. Fetch and extract the IWYU source tag from GitHub.
 3. Automatically apply patches found in `internal/patches/<version>/` or `internal/patches/<major_minor>/` (e.g., [internal/patches/0.20/p01_angle_quote_curse_dirty_fix.patch](file:///home/austin/local/bazel_iwyu/internal/patches/0.20/p01_angle_quote_curse_dirty_fix.patch)).
 4. Compile and install IWYU into a release folder, bundle Clang's internal headers, and package it as `iwyu-<version>-<arch>-<os_suffix>.tar.zst` using `zstd -21 --ultra`.
