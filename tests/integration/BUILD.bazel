@@ -47,6 +47,14 @@ sh_binary(
     ],
 )
 
+sh_binary(
+    name = "iwyu_opts_test_runner",
+    srcs = ["iwyu_opts_test.sh"],
+    data = [
+        "@bazel_tools//tools/bash/runfiles",
+    ],
+)
+
 # 1. Version Selection Tests
 bazel_integration_test(
     name = "version_selection_test_8",
@@ -127,6 +135,27 @@ bazel_integration_test(
     bazel_version = "9.0.0",
     tags = [],
     test_runner = ":mapping_flag_error_test_runner",
+    workspace_files = WORKSPACE_FILES,
+    workspace_path = "test_workspace",
+)
+
+# 5. Positive Custom Options (iwyu_opts) Tests
+bazel_integration_test(
+    name = "iwyu_opts_test_8",
+    bazel_binaries = bazel_binaries,
+    bazel_version = "8.0.0",
+    tags = [],
+    test_runner = ":iwyu_opts_test_runner",
+    workspace_files = WORKSPACE_FILES,
+    workspace_path = "test_workspace",
+)
+
+bazel_integration_test(
+    name = "iwyu_opts_test_9",
+    bazel_binaries = bazel_binaries,
+    bazel_version = "9.0.0",
+    tags = [],
+    test_runner = ":iwyu_opts_test_runner",
     workspace_files = WORKSPACE_FILES,
     workspace_path = "test_workspace",
 )
