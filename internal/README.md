@@ -59,3 +59,44 @@ docker run -it --rm \
 ```
 
 The built tarball `iwyu-0.25.0-x86_64-linux-gnu.tar.zst` will be output to your host's current working directory.
+
+---
+
+## 4. How to do Releases
+
+There are two distinct types of releases managed in this repository, each with its own GitHub Action workflow.
+
+### A. Ruleset Releases (e.g., `v0.0.4`)
+
+This release packages the Bazel ruleset source code so that it can be imported into the Bazel Central Registry (BCR) as a stable, static release archive.
+
+1. **Triggering the Release**:
+   * **Automatically**: Publish a new GitHub release with a tag name starting with `v` (e.g., `v0.0.4`).
+   * **Manually**: Go to the GitHub Actions tab, select the **Publish Ruleset Release Archive** workflow, and trigger it via **Workflow Dispatch** by entering the target version (e.g., `0.0.4`).
+2. **What the Workflow Does**:
+   * Checks out the codebase.
+   * Automatically patches the `MODULE.bazel` file to insert the correct `version` attribute:
+     ```bazel
+     module(
+         name = "bazel_iwyu",
+         version = "0.0.4",
+     )
+     ```
+   * Packages all repository files (excluding `.git`, `bazel-*` outputs, and ruff caches) inside a clean folder named `bazel_iwyu-<version>`.
+   * Compresses the folder into a `bazel_iwyu-<version>.tar.zst` archive.
+   * Uploads this archive as a release asset to the corresponding GitHub Release.
+
+This `.tar.zst` archive is what should be referenced in the BCR `source.json` to ensure a stable and fast source code download.
+
+### B. Prebuilt IWYU Binary Releases (e.g., `iwyu-0.25.0`)
+
+This release builds and uploads the static IWYU command-line tool binaries used by the prebuilt toolchain.
+
+1. **Triggering the Release**:
+   * **Automatically**: Publish a new GitHub release with a tag name starting with `iwyu-` (e.g., `iwyu-0.25.0`).
+   * **Manually**: Go to the GitHub Actions tab, select the **Build and Release IWYU** workflow, and trigger it via **Workflow Dispatch** by entering the target IWYU and Clang versions.
+2. **What the Workflow Does**:
+   * Compiles hermetic, statically-linked binaries for both `x86_64` and `aarch64`/`arm64` architectures across Linux and macOS.
+   * Bundles the required Clang compiler header files inside the archive.
+   * Compresses each package using `zstd -21 --ultra` and uploads the resulting `iwyu-*.tar.zst` binaries to the corresponding GitHub Release.
+

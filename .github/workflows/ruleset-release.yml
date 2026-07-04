@@ -1,0 +1,82 @@
+name: Publish Ruleset Release Archive
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Ruleset version to package (e.g. 0.0.4)'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  ruleset-release:
+    name: Package and Upload Ruleset Release
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.event.release.tag_name, 'v')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Install zstd
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y zstd
+
+      - name: Set Version and Update MODULE.bazel
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "release" ]; then
+            TAG="${{ github.event.release.tag_name }}"
+            VERSION="${TAG#v}"
+          else
+            VERSION="${{ github.event.inputs.version }}"
+            TAG="v${VERSION}"
+          fi
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "tag=${TAG}" >> $GITHUB_OUTPUT
+
+          python3 -c "
+          import re
+          with open('MODULE.bazel', 'r') as f:
+              content = f.read()
+          pattern = r'module\(\s*name\s*=\s*\"bazel_iwyu\"\s*\)'
+          replacement = 'module(\n    name = \"bazel_iwyu\",\n    version = \"' + '$VERSION' + '\",\n)'
+          new_content = re.sub(pattern, replacement, content)
+          with open('MODULE.bazel', 'w') as f:
+              f.write(new_content)
+          "
+          echo "Updated MODULE.bazel:"
+          cat MODULE.bazel
+
+      - name: Package Release Tarball
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          DIR="bazel_iwyu-${VERSION}"
+          mkdir "${DIR}"
+          
+          # Copy all files from repository except git, build/test output, cache, and the temp dir itself
+          rsync -a --exclude='.git*' --exclude='bazel-*' --exclude='.ruff_cache' --exclude="${DIR}" ./ "${DIR}/"
+          
+          # Create zstd compressed tarball
+          tar --zstd -cf "bazel_iwyu-${VERSION}.tar.zst" "${DIR}"
+          
+          echo "Archive created: bazel_iwyu-${VERSION}.tar.zst"
+          ls -lh "bazel_iwyu-${VERSION}.tar.zst"
+
+      - name: Upload to GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG_NAME: ${{ steps.version.outputs.tag }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          if ! gh release view "${TAG_NAME}" -R "${GITHUB_REPOSITORY}" >/dev/null 2>&1; then
+            echo "Release ${TAG_NAME} not found. Creating a draft release..."
+            gh release create "${TAG_NAME}" -R "${GITHUB_REPOSITORY}" --draft --title "${TAG_NAME}" --notes "Release ${TAG_NAME}"
+          fi
+          
+          gh release upload "${TAG_NAME}" "bazel_iwyu-${VERSION}.tar.zst" -R "${GITHUB_REPOSITORY}" --clobber
