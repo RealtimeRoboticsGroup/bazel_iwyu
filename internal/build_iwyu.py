@@ -230,6 +230,8 @@ def main():
                 [
                     "-DCMAKE_FIND_LIBRARY_SUFFIXES=.a",
                     "-DIWYU_LINK_CLANG_DYLIB=OFF",
+                    f"-DCMAKE_EXE_LINKER_FLAGS=-nostdlib++ {llvm_dir}/lib/libc++.a {llvm_dir}/lib/libc++abi.a",
+                    f"-DCMAKE_SHARED_LINKER_FLAGS=-nostdlib++ {llvm_dir}/lib/libc++.a {llvm_dir}/lib/libc++abi.a",
                 ]
             )
         subprocess.run(
