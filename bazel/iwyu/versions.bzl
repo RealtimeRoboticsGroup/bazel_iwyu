@@ -1,6 +1,6 @@
 """Supported versions of Include What You Use (IWYU)"""
 
-DEFAULT_VERSION = "0.25.0"
+DEFAULT_VERSION = "0.26.0"
 
 SUPPORTED_VERSIONS = {
     "0.24.0": {
@@ -35,6 +35,23 @@ SUPPORTED_VERSIONS = {
             "url": "https://github.com/RealtimeRoboticsGroup/bazel_iwyu/releases/download/iwyu-0.25.0/iwyu-0.25.0-arm64-apple-darwin.tar.zst",
             "sha256": "14f073a32e64ca03cee919ba8e16c48a1864c25732edffee95b29b641f11719d",
             "strip_prefix": "iwyu-0.25.0-arm64-apple-darwin",
+        },
+    },
+    "0.26.0": {
+        "linux-aarch64": {
+            "url": "https://github.com/RealtimeRoboticsGroup/bazel_iwyu/releases/download/iwyu-0.26.0/iwyu-0.26.0-aarch64-linux-gnu.tar.zst",
+            "sha256": "af683808b64ad75e4abb3df5f4187193f85f663fda5d6e408c0e2c9bdc32a484",
+            "strip_prefix": "iwyu-0.26.0-aarch64-linux-gnu",
+        },
+        "linux-x86_64": {
+            "url": "https://github.com/RealtimeRoboticsGroup/bazel_iwyu/releases/download/iwyu-0.26.0/iwyu-0.26.0-x86_64-linux-gnu.tar.zst",
+            "sha256": "f0360da3d5f88b14d006d17ba71d1ff403aa06427187d6fc74584a7ab52aef63",
+            "strip_prefix": "iwyu-0.26.0-x86_64-linux-gnu",
+        },
+        "macos-arm64": {
+            "url": "https://github.com/RealtimeRoboticsGroup/bazel_iwyu/releases/download/iwyu-0.26.0/iwyu-0.26.0-arm64-apple-darwin.tar.zst",
+            "sha256": "111f1da7bf5da56b76aa72abee08256828aacb6d5bff899fcf1753cf56f59e73",
+            "strip_prefix": "iwyu-0.26.0-arm64-apple-darwin",
         },
     },
 }

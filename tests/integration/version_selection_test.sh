@@ -16,37 +16,61 @@ sed "s|path = \"../../..\"|path = \"${PARENT_ROOT}\"|g" "${WRITABLE_WORKSPACE}/M
 
 cd "${WRITABLE_WORKSPACE}"
 
-echo "Running IWYU build..."
-"${BIT_BAZEL_BINARY}" \
-  --output_user_root="${TEST_TMPDIR}/output_user_root" \
-  --bazelrc=/dev/null \
-  build \
-  --repository_cache="${TEST_TMPDIR}/repository_cache" \
-  --aspects @bazel_iwyu//bazel/iwyu:iwyu.bzl%iwyu_aspect \
-  --output_groups=report //... || true
+# Test each of the three versions
+for version in "0.24.0" "0.25.0" "0.26.0"; do
+  if [[ "${version}" == "0.24.0" ]]; then
+    expected_clang="20"
+  elif [[ "${version}" == "0.25.0" ]]; then
+    expected_clang="21"
+  elif [[ "${version}" == "0.26.0" ]]; then
+    expected_clang="22"
+  fi
 
-# Verify that the CUDA targets were successfully skipped and no reports were generated
-CUDA_SIM_REPORTS=$(find -L bazel-out -name "*cuda_sim*.iwyu.txt")
-if [[ -n "${CUDA_SIM_REPORTS}" ]]; then
-  echo "Error: CUDA targets were not skipped! Found reports:" >&2
-  echo "${CUDA_SIM_REPORTS}" >&2
-  exit 1
-else
-  echo "Success: CUDA targets were successfully skipped."
-fi
+  echo "=================================================="
+  echo "Testing IWYU version ${version} (Expecting Clang ${expected_clang})..."
+  echo "=================================================="
 
-WRAPPER_FILE=$(find -L bazel-out -name "*_wrapper.sh" | head -n 1)
-if [[ -z "${WRAPPER_FILE}" ]]; then
-  echo "Error: Generated wrapper script not found!" >&2
-  exit 1
-fi
+  # Update MODULE.bazel with the target version
+  sed "s|toolchain(version = \"[0-9.]*\")|toolchain(version = \"${version}\")|g" MODULE.bazel > MODULE.bazel.tmp && mv MODULE.bazel.tmp MODULE.bazel
 
-echo "Found wrapper script: ${WRAPPER_FILE}"
-cat "${WRAPPER_FILE}"
+  # Clean the workspace build output for this version run
+  "${BIT_BAZEL_BINARY}" \
+    --output_user_root="${TEST_TMPDIR}/output_user_root" \
+    --bazelrc=/dev/null \
+    clean || true
 
-if grep -q "lib/clang/20" "${WRAPPER_FILE}"; then
-  echo "Success: Wrapper script correctly references Clang 20."
-else
-  echo "Error: Wrapper script does not reference Clang 20. Version selection failed!" >&2
-  exit 1
-fi
+  # Run IWYU build
+  "${BIT_BAZEL_BINARY}" \
+    --output_user_root="${TEST_TMPDIR}/output_user_root" \
+    --bazelrc=/dev/null \
+    build \
+    --repository_cache="${TEST_TMPDIR}/repository_cache" \
+    --aspects @bazel_iwyu//bazel/iwyu:iwyu.bzl%iwyu_aspect \
+    --output_groups=report //... || true
+
+  # Verify that the CUDA targets were successfully skipped and no reports were generated
+  CUDA_SIM_REPORTS=$(find -L bazel-out -name "*cuda_sim*.iwyu.txt")
+  if [[ -n "${CUDA_SIM_REPORTS}" ]]; then
+    echo "Error: CUDA targets were not skipped! Found reports:" >&2
+    echo "${CUDA_SIM_REPORTS}" >&2
+    exit 1
+  else
+    echo "Success: CUDA targets were successfully skipped."
+  fi
+
+  WRAPPER_FILE=$(find -L bazel-out -name "*_wrapper.sh" | head -n 1)
+  if [[ -z "${WRAPPER_FILE}" ]]; then
+    echo "Error: Generated wrapper script not found!" >&2
+    exit 1
+  fi
+
+  echo "Found wrapper script: ${WRAPPER_FILE}"
+  cat "${WRAPPER_FILE}"
+
+  if grep -q "lib/clang/${expected_clang}" "${WRAPPER_FILE}"; then
+    echo "Success: Wrapper script correctly references Clang ${expected_clang}."
+  else
+    echo "Error: Wrapper script does not reference Clang ${expected_clang}. Version selection failed!" >&2
+    exit 1
+  fi
+done
