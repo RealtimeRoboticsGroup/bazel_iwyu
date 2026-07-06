@@ -35,6 +35,13 @@ In your `MODULE.bazel` file, add:
 
 ```python
 bazel_dep(name = "bazel_iwyu", version = "<version>")
+
+# Workaround until IWYU is uploaded to the BCR.
+git_override(
+    module_name = "bazel_iwyu",
+    remote = "https://github.com/RealtimeRoboticsGroup/bazel_iwyu.git",
+    tag = "v<version>",
+)
 ```
 
 ---
